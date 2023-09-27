@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Jeopardy Android"
 include(":app")
+include(":network")
