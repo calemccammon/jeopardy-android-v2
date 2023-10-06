@@ -1,9 +1,9 @@
 package com.cale.mccammon.jeopardy.module.domain
 
 import com.cale.mccammon.jeopardy.module.data.JeopardyRepository
-import com.cale.mccammon.jeopardy.module.data.Network
+import com.cale.mccammon.jeopardy.module.data.JeopardyNetwork
 
 interface JeopardyComponent {
-    val network: Network
+    val network: JeopardyNetwork
     val repository: JeopardyRepository
 }

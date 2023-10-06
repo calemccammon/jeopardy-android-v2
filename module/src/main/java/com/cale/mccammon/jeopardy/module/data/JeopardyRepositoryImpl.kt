@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class JeopardyRepositoryImpl @Inject constructor(
-    private val network: Network
+    private val network: JeopardyNetwork
 ) : JeopardyRepository {
     override fun getRandomQuestion(): Flow<List<Question>> {
         return flow { emit(network.getRandomQuestion()) }
