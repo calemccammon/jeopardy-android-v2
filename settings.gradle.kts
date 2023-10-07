@@ -15,4 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Jeopardy Android"
 include(":app")
-include(":module")
+include(":modules:feature")
+include(":modules:theme")
