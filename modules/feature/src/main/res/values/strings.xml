@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="jeopardy_submit">Submit</string>
+    <string name="jeopardy_reveal">Reveal</string>
+    <string name="jeopardy_skip">Skip</string>
+</resources>

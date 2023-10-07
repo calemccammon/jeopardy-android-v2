@@ -1,20 +1,29 @@
 package com.cale.mccammon.jeopardy.feature.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.cale.mccammon.jeopardy.feature.presentation.theme.Padding
+import com.cale.mccammon.jeopardy.feature.R
+import com.cale.mccammon.jeopardy.theme.Padding
 import kotlinx.coroutines.launch
 
 internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<ViewState> {
@@ -47,16 +56,25 @@ fun JeopardyStateView(
     state: ViewState
 ) {
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(Padding.Large)
     ) {
         JeopardyQuestionBox(state = state)
+        JeopardyButtonColumn(state = state)
     }
 }
 
 @Composable
 fun JeopardyQuestionBox(state: ViewState) {
-    Box {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.25f)
+            .background(Color.Blue)
+            .padding(Padding.Large),
+        contentAlignment = Alignment.Center
+    ) {
         when (state) {
             is ViewState.Inactive -> {
                 CircularProgressIndicator()
@@ -70,6 +88,17 @@ fun JeopardyQuestionBox(state: ViewState) {
             is ViewState.ShowRandomQuestion -> {
 
             }
+        }
+    }
+}
+
+@Composable
+fun JeopardyButtonColumn(state: ViewState) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Button(onClick = {  }) {
+            Text(text = stringResource(id = R.string.jeopardy_submit))
         }
     }
 }
