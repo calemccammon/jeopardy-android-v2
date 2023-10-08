@@ -34,6 +34,15 @@ class JeopardyViewModel @Inject constructor(
                     intent.question
                 )
             }
+            is ViewIntent.RevealAnswer -> {
+                ViewState.ShowAnswer(intent.question.answer)
+            }
+            is ViewIntent.SubmitAnswer -> {
+                ViewState.EvaluateSubmission(
+                    intent.answer,
+                    intent.question
+                )
+            }
         }
     }
 
@@ -51,7 +60,7 @@ class JeopardyViewModel @Inject constructor(
                         _viewState.emit(newState)
                     }
                 }
-                is ViewIntent.SetRandomQuestion -> {
+                else -> {
                     val newState = reduce(
                         _viewState.value,
                         intent

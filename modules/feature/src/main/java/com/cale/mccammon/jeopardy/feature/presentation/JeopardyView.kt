@@ -36,14 +36,19 @@ fun JeopardyView(
 ) {
     val state by viewModel.viewState.collectAsState()
 
-    JeopardyStateView(state = state)
+    JeopardyStateView(
+        state = state
+    ) { intent ->
+        viewModel.handleIntent(intent)
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun JeopardyStateView(
     @PreviewParameter(JeopardyStateViewPreviewParameter::class)
-    state: ViewState
+    state: ViewState,
+    handleIntent: (ViewIntent) -> Unit = { }
 ) {
     Column(
         modifier = Modifier
@@ -51,7 +56,7 @@ fun JeopardyStateView(
             .padding(Padding.Large)
     ) {
         JeopardyQuestionBox(state = state)
-        JeopardyButtonColumn(state = state)
+        JeopardyButtonColumn(state = state, handleIntent = handleIntent)
     }
 }
 
@@ -76,19 +81,40 @@ fun JeopardyQuestionBox(state: ViewState) {
 
             }
             is ViewState.ShowRandomQuestion -> {
-
+                Text(text = state.question.question)
             }
+            else -> { }
         }
     }
 }
 
 @Composable
-fun JeopardyButtonColumn(state: ViewState) {
+fun JeopardyButtonColumn(
+    state: ViewState,
+    handleIntent: (ViewIntent) -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Button(onClick = {  }) {
+        Button(
+            onClick = {
+            }
+        ) {
             Text(text = stringResource(id = R.string.jeopardy_submit))
+        }
+
+        Button(
+            onClick = {
+                handleIntent.invoke(ViewIntent.GetRandomQuestion)
+            }
+        ) {
+            Text(text = stringResource(id = R.string.jeopardy_skip))
+        }
+
+        Button(
+            onClick = {  }
+        ) {
+            Text(text = stringResource(id = R.string.jeopardy_reveal))
         }
     }
 }
