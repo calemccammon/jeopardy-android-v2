@@ -11,9 +11,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,7 +23,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cale.mccammon.jeopardy.feature.R
 import com.cale.mccammon.jeopardy.theme.Padding
-import kotlinx.coroutines.launch
 
 internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<ViewState> {
     override val values: Sequence<ViewState> = sequenceOf(
@@ -36,17 +34,9 @@ internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<View
 fun JeopardyView(
     viewModel: JeopardyViewModel = hiltViewModel()
 ) {
-    val scope = rememberCoroutineScope()
-    
-    LaunchedEffect(key1 = Unit) {
-        scope.launch {
-            viewModel.viewIntent.send(ViewIntent.GetRandomQuestion)
-        }
-    }
-    
-    viewModel.viewState.collectAsState().value.let { state -> 
-        JeopardyStateView(state = state)
-    }
+    val state by viewModel.viewState.collectAsState()
+
+    JeopardyStateView(state = state)
 }
 
 @Preview(showBackground = true)
