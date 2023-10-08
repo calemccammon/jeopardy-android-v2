@@ -81,7 +81,9 @@ fun JeopardyQuestionBox(state: ViewState) {
 
             }
             is ViewState.ShowRandomQuestion -> {
+                Text(text = state.question.category)
                 Text(text = state.question.question)
+                Text(text = state.question.value.toString())
             }
             else -> { }
         }

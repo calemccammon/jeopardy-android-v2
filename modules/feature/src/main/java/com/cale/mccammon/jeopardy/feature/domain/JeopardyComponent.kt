@@ -6,4 +6,5 @@ import com.cale.mccammon.jeopardy.feature.data.JeopardyNetwork
 interface JeopardyComponent {
     val network: JeopardyNetwork
     val repository: JeopardyRepository
+    val logger: JeopardyLogger
 }
