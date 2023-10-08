@@ -1,8 +1,11 @@
 package com.cale.mccammon.jeopardy.feature.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,74 +59,108 @@ fun JeopardyStateView(
     @PreviewParameter(JeopardyStateViewPreviewParameter::class)
     state: ViewState,
     handleIntent: (ViewIntent) -> Unit = { }
+) = Column(
+    modifier = Modifier
+        .fillMaxSize()
+        .padding(Padding.Large)
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Padding.Large)
-    ) {
-        JeopardyQuestionBox(state = state)
-        JeopardyButtonColumn(state = state, handleIntent = handleIntent)
+    JeopardyQuestionBox(state = state)
+    if (state is ViewState.ShowRandomQuestion) {
+        JeopardyValueRow(value = state.question.value.toString())
     }
+    JeopardyButtonColumn(state = state, handleIntent = handleIntent)
 }
 
 @Composable
-fun JeopardyQuestionBox(state: ViewState) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.25f)
-            .background(Color.Blue)
-            .padding(Padding.Large),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        when (state) {
-            is ViewState.Inactive -> {
-                CircularProgressIndicator()
-            }
-            is ViewState.Loading -> {
-                CircularProgressIndicator()
-            }
-            is ViewState.Error -> {
-
-            }
-            is ViewState.ShowRandomQuestion -> {
-                Text(text = state.question.category)
-                Text(text = state.question.question)
-                Text(text = state.question.value.toString())
-            }
-            else -> { }
+fun JeopardyQuestionBox(state: ViewState) = Column(
+    modifier = Modifier
+        .fillMaxWidth()
+        .fillMaxHeight(0.25f)
+        .background(Color.Blue)
+        .padding(Padding.Large)
+) {
+    when (state) {
+        is ViewState.Inactive -> {
+            CircularProgressIndicator()
         }
+
+        is ViewState.Loading -> {
+            CircularProgressIndicator()
+        }
+
+        is ViewState.Error -> {
+
+        }
+
+        is ViewState.ShowRandomQuestion -> {
+            JeopardyCategoryRow(category = state.question.category)
+            JeopardyQuestionRow(question = state.question.question)
+        }
+
+        else -> {}
     }
+}
+
+
+@Composable
+fun JeopardyCategoryRow(category: String) = Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.Center,
+    verticalAlignment = Alignment.CenterVertically
+) {
+    Text(text = category)
+}
+
+@Composable
+fun JeopardyQuestionRow(question: String) = Row(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(
+            vertical = Padding.Medium
+        ),
+    horizontalArrangement = Arrangement.Center,
+    verticalAlignment = Alignment.Top
+) {
+    Text(text = question)
+}
+
+@Composable
+fun JeopardyValueRow(value: String) = Row(
+    modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Blue)
+        .padding(Padding.Large),
+    horizontalArrangement = Arrangement.End,
+    verticalAlignment = Alignment.Bottom
+) {
+    Text(text = value)
 }
 
 @Composable
 fun JeopardyButtonColumn(
     state: ViewState,
     handleIntent: (ViewIntent) -> Unit
+) = Column(
+    modifier = Modifier.fillMaxWidth()
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    Button(
+        onClick = {
+        }
     ) {
-        Button(
-            onClick = {
-            }
-        ) {
-            Text(text = stringResource(id = R.string.jeopardy_submit))
-        }
+        Text(text = stringResource(id = R.string.jeopardy_submit))
+    }
 
-        Button(
-            onClick = {
-                handleIntent.invoke(ViewIntent.GetRandomQuestion)
-            }
-        ) {
-            Text(text = stringResource(id = R.string.jeopardy_skip))
+    Button(
+        onClick = {
+            handleIntent.invoke(ViewIntent.GetRandomQuestion)
         }
+    ) {
+        Text(text = stringResource(id = R.string.jeopardy_skip))
+    }
 
-        Button(
-            onClick = {  }
-        ) {
-            Text(text = stringResource(id = R.string.jeopardy_reveal))
-        }
+    Button(
+        onClick = { }
+    ) {
+        Text(text = stringResource(id = R.string.jeopardy_reveal))
     }
 }
