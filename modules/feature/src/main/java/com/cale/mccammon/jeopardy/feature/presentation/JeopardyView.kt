@@ -26,7 +26,14 @@ import com.cale.mccammon.jeopardy.theme.Padding
 
 internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<ViewState> {
     override val values: Sequence<ViewState> = sequenceOf(
-        ViewState.Inactive
+        ViewState.ShowRandomQuestion(
+            ViewState.Question(
+                "Category",
+                "Question",
+                "Answer",
+                100
+            )
+        )
     )
 }
 
@@ -62,13 +69,13 @@ fun JeopardyStateView(
 
 @Composable
 fun JeopardyQuestionBox(state: ViewState) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(0.25f)
             .background(Color.Blue)
             .padding(Padding.Large),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (state) {
             is ViewState.Inactive -> {
