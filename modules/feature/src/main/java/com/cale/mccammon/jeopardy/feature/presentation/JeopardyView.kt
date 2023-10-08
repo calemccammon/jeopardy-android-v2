@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -16,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,12 +65,10 @@ fun JeopardyStateView(
 ) = Column(
     modifier = Modifier
         .fillMaxSize()
-        .padding(Padding.Large)
+        .padding(Padding.Large),
+    verticalArrangement = Arrangement.SpaceBetween
 ) {
     JeopardyQuestionBox(state = state)
-    if (state is ViewState.ShowRandomQuestion) {
-        JeopardyValueRow(value = state.question.value.toString())
-    }
     JeopardyButtonColumn(state = state, handleIntent = handleIntent)
 }
 
@@ -75,9 +76,9 @@ fun JeopardyStateView(
 fun JeopardyQuestionBox(state: ViewState) = Column(
     modifier = Modifier
         .fillMaxWidth()
-        .fillMaxHeight(0.25f)
         .background(Color.Blue)
-        .padding(Padding.Large)
+        .padding(Padding.Large),
+    verticalArrangement = Arrangement.SpaceBetween
 ) {
     when (state) {
         is ViewState.Inactive -> {
@@ -95,6 +96,8 @@ fun JeopardyQuestionBox(state: ViewState) = Column(
         is ViewState.ShowRandomQuestion -> {
             JeopardyCategoryRow(category = state.question.category)
             JeopardyQuestionRow(question = state.question.question)
+            Spacer(modifier = Modifier.height(Padding.XLarge))
+            JeopardyValueRow(value = state.question.value.toString())
         }
 
         else -> {}
@@ -128,8 +131,7 @@ fun JeopardyQuestionRow(question: String) = Row(
 fun JeopardyValueRow(value: String) = Row(
     modifier = Modifier
         .fillMaxWidth()
-        .background(Color.Blue)
-        .padding(Padding.Large),
+        .background(Color.Blue),
     horizontalArrangement = Arrangement.End,
     verticalAlignment = Alignment.Bottom
 ) {
@@ -158,8 +160,21 @@ fun JeopardyButtonColumn(
         Text(text = stringResource(id = R.string.jeopardy_skip))
     }
 
+    val openDialog = remember { mutableStateOf(false) }
+
+    if (openDialog.value) {
+        JeopardyAlertDialog(
+            onDismissRequest = { openDialog.value = false },
+            onConfirmation = { openDialog.value = false },
+            dialogTitle = "test",
+            dialogText = "test"
+        )
+    }
+
     Button(
-        onClick = { }
+        onClick = {
+            openDialog.value = true
+        }
     ) {
         Text(text = stringResource(id = R.string.jeopardy_reveal))
     }
