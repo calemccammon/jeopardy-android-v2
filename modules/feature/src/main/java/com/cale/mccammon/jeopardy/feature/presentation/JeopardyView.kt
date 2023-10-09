@@ -30,29 +30,32 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.cale.mccammon.jeopardy.feature.R
 import com.cale.mccammon.jeopardy.theme.Padding
 
-internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<ViewState> {
-    override val values: Sequence<ViewState> = sequenceOf(
-        ViewState.ShowRandomQuestion(
-            ViewState.Question(
+internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<JeopardyPlayState> {
+    override val values: Sequence<JeopardyPlayState> = sequenceOf(
+        JeopardyPlayState(
+            false,
+            JeopardyQuestion(
                 "Category",
                 "Question",
                 "Answer",
                 100
-            )
+            ),
+            false,
+            null
         )
     )
 }
 
 @Composable
 fun JeopardyView(
-    viewModel: JeopardyViewModel = hiltViewModel()
+    viewModel: JeopardyPlayViewModel = hiltViewModel()
 ) {
-    val state by viewModel.viewState.collectAsState()
+    val state by viewModel.state.collectAsState()
 
     JeopardyStateView(
         state = state
-    ) { intent ->
-        viewModel.handleIntent(intent)
+    ) { event ->
+        viewModel.handleEvent(event)
     }
 }
 
@@ -60,47 +63,60 @@ fun JeopardyView(
 @Composable
 fun JeopardyStateView(
     @PreviewParameter(JeopardyStateViewPreviewParameter::class)
-    state: ViewState,
-    handleIntent: (ViewIntent) -> Unit = { }
+    state: JeopardyPlayState,
+    handleEvent: (JeopardyPlayEvent) -> Unit = { }
 ) = Column(
     modifier = Modifier
         .fillMaxSize()
         .padding(Padding.Large),
     verticalArrangement = Arrangement.SpaceBetween
 ) {
+    val openDialog = remember { mutableStateOf(state.revealAnswer) }
+
+    if (openDialog.value) {
+        JeopardyAlertDialog(
+            onDismissRequest = { openDialog.value = false },
+            onConfirmation = { openDialog.value = false },
+            dialogTitle = "test",
+            dialogText = "test"
+        )
+    }
+
     JeopardyQuestionBox(state = state)
-    JeopardyButtonColumn(state = state, handleIntent = handleIntent)
+
+    JeopardyButtonColumn(
+        state = state,
+        onSubmit = {
+            handleEvent.invoke(JeopardyPlayEvent.SendAnswer("test"))
+        },
+        onSkip = {
+            handleEvent.invoke(JeopardyPlayEvent.GetRandomQuestion)
+        },
+        onReveal = {
+            openDialog.value = true
+            handleEvent.invoke(JeopardyPlayEvent.RevealAnswer)
+        }
+    )
 }
 
 @Composable
-fun JeopardyQuestionBox(state: ViewState) = Column(
+fun JeopardyQuestionBox(state: JeopardyPlayState) = Column(
     modifier = Modifier
         .fillMaxWidth()
         .background(Color.Blue)
         .padding(Padding.Large),
     verticalArrangement = Arrangement.SpaceBetween
 ) {
-    when (state) {
-        is ViewState.Inactive -> {
+    when {
+        state.isLoading -> {
             CircularProgressIndicator()
         }
-
-        is ViewState.Loading -> {
-            CircularProgressIndicator()
-        }
-
-        is ViewState.Error -> {
-
-        }
-
-        is ViewState.ShowRandomQuestion -> {
-            JeopardyCategoryRow(category = state.question.category)
+        else -> {
+            JeopardyCategoryRow(category = state.question!!.category)
             JeopardyQuestionRow(question = state.question.question)
             Spacer(modifier = Modifier.height(Padding.XLarge))
             JeopardyValueRow(value = state.question.value.toString())
         }
-
-        else -> {}
     }
 }
 
@@ -140,41 +156,27 @@ fun JeopardyValueRow(value: String) = Row(
 
 @Composable
 fun JeopardyButtonColumn(
-    state: ViewState,
-    handleIntent: (ViewIntent) -> Unit
+    state: JeopardyPlayState,
+    onSubmit: () -> Unit,
+    onSkip: () -> Unit,
+    onReveal: () -> Unit
 ) = Column(
     modifier = Modifier.fillMaxWidth()
 ) {
     Button(
-        onClick = {
-        }
+        onClick = onSubmit
     ) {
         Text(text = stringResource(id = R.string.jeopardy_submit))
     }
 
     Button(
-        onClick = {
-            handleIntent.invoke(ViewIntent.GetRandomQuestion)
-        }
+        onClick = onSkip
     ) {
         Text(text = stringResource(id = R.string.jeopardy_skip))
     }
 
-    val openDialog = remember { mutableStateOf(false) }
-
-    if (openDialog.value) {
-        JeopardyAlertDialog(
-            onDismissRequest = { openDialog.value = false },
-            onConfirmation = { openDialog.value = false },
-            dialogTitle = "test",
-            dialogText = "test"
-        )
-    }
-
     Button(
-        onClick = {
-            openDialog.value = true
-        }
+        onClick = onReveal
     ) {
         Text(text = stringResource(id = R.string.jeopardy_reveal))
     }

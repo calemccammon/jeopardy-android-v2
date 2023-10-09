@@ -1,12 +1,12 @@
 package com.cale.mccammon.jeopardy.feature.domain
 
 import com.cale.mccammon.jeopardy.feature.data.model.Question
-import com.cale.mccammon.jeopardy.feature.presentation.ViewState
+import com.cale.mccammon.jeopardy.feature.presentation.JeopardyQuestion
 
 object JeopardyModelMapper {
-    fun mapQuestion(questions: List<Question>): ViewState.Question {
+    fun mapQuestion(questions: List<Question>): JeopardyQuestion {
         return questions.first().let {
-            ViewState.Question(
+            JeopardyQuestion(
                 it.category.title,
                 it.question,
                 it.answer,
