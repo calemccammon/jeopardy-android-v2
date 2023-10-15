@@ -1,15 +1,15 @@
 package com.cale.mccammon.jeopardy.feature.presentation
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cale.mccammon.jeopardy.feature.data.JeopardyInvalidQuestionException
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyComponent
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapper
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapper.fromHtml
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -30,9 +30,6 @@ data class JeopardyPlayState(
 
 sealed class JeopardyPlayEvent {
     object GetRandomQuestion : JeopardyPlayEvent()
-    data class SetRandomQuestion(
-        val question: JeopardyQuestion
-    ): JeopardyPlayEvent()
 
     object RevealAnswer : JeopardyPlayEvent()
 
@@ -41,10 +38,20 @@ sealed class JeopardyPlayEvent {
     ) : JeopardyPlayEvent()
 }
 
+sealed class JeopardyPlayResult {
+    data class SetRandomQuestion(
+        val question: JeopardyQuestion
+    ): JeopardyPlayResult()
+
+    data class AnswerEvaluated(
+        val isCorrect: Boolean
+    ): JeopardyPlayResult()
+}
+
 @HiltViewModel
 class JeopardyPlayViewModel @Inject constructor(
     private val component: JeopardyComponent
-) : JeopardyViewModel<JeopardyPlayState, JeopardyPlayEvent>() {
+) : JeopardyViewModel<JeopardyPlayState, JeopardyPlayEvent, JeopardyPlayResult>() {
 
     override val initialState: JeopardyPlayState = JeopardyPlayState()
 
@@ -63,11 +70,16 @@ class JeopardyPlayViewModel @Inject constructor(
                     is JeopardyPlayEvent.GetRandomQuestion -> {
                         withContext(Dispatchers.IO) {
                             component.repository.getRandomQuestion()
+                        }.retry(
+                            1L
+                        ) {
+                            component.logger.e(it)
+                            it is JeopardyInvalidQuestionException
                         }.collect { questions ->
                             _state.tryEmit(
-                                reduce(
+                                handleResult(
                                     _state.value,
-                                    JeopardyPlayEvent.SetRandomQuestion(
+                                    JeopardyPlayResult.SetRandomQuestion(
                                         JeopardyModelMapper.mapQuestion(
                                             questions
                                         )
@@ -76,7 +88,19 @@ class JeopardyPlayViewModel @Inject constructor(
                             )
                         }
                     }
+                    is JeopardyPlayEvent.SendAnswer -> {
+                        val isCorrect = event.answer.sanitize() == _state.value.question?.answer?.sanitize()
+                        _state.tryEmit(
+                            handleResult(
+                                _state.value,
+                                JeopardyPlayResult.AnswerEvaluated(
+                                    isCorrect
+                                )
+                            )
+                        )
+                    }
                     else -> {
+
                     }
                 }
             } catch (ex: Exception) {
@@ -85,26 +109,45 @@ class JeopardyPlayViewModel @Inject constructor(
         }
     }
 
-    override fun reduce(state: JeopardyPlayState, event: JeopardyPlayEvent): JeopardyPlayState {
-        return when (event) {
-            is JeopardyPlayEvent.GetRandomQuestion -> {
-                state.copy(isLoading = true)
+    override fun handleResult(state: JeopardyPlayState, result: JeopardyPlayResult): JeopardyPlayState {
+        return when (result) {
+            is JeopardyPlayResult.SetRandomQuestion -> {
+                state.copy(isLoading = false, question = result.question)
             }
-            is JeopardyPlayEvent.SetRandomQuestion -> {
-                state.copy(isLoading = false, question = event.question)
-            }
-            is JeopardyPlayEvent.RevealAnswer -> {
-                state.copy(revealAnswer = true)
+            is JeopardyPlayResult.AnswerEvaluated -> {
+                component.logger.d(result.toString())
+                state
             }
             else -> {
                 state
             }
         }.also { newState ->
             with(component.logger) {
-                d("Event: $event")
+                d("Event: $result")
                 d("Previous State: $state")
                 d("New State: $newState")
             }
         }
+    }
+
+    /**
+     * The API we use is not the greatest in terms of formatting
+     * the answer. For this reason, we need to sanitize the strings.
+     * We also want to get rid of leading articles.
+     */
+    private fun String.sanitize(): String {
+        return fromHtml().replace(
+            "the ",
+            "",
+            true
+        ).replace(
+            "a ",
+            "",
+            true
+        ).replace(
+            "an ",
+            "",
+            true
+        ).lowercase()
     }
 }

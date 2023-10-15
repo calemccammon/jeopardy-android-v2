@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-abstract class JeopardyViewModel<T, V> : ViewModel() {
+abstract class JeopardyViewModel<T, V, R> : ViewModel() {
     abstract val state: StateFlow<T>
     abstract val initialState: T
     abstract fun handleEvent(event: V)
-    abstract fun reduce(state: T, event: V): T
+    abstract fun handleResult(state: T, event: R): T
 }

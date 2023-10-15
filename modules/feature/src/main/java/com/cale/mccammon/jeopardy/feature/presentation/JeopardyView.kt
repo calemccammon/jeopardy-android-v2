@@ -1,6 +1,8 @@
 package com.cale.mccammon.jeopardy.feature.presentation
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,8 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -65,38 +72,68 @@ fun JeopardyStateView(
     @PreviewParameter(JeopardyStateViewPreviewParameter::class)
     state: JeopardyPlayState,
     handleEvent: (JeopardyPlayEvent) -> Unit = { }
-) = Column(
-    modifier = Modifier
-        .fillMaxSize()
-        .padding(Padding.Large),
-    verticalArrangement = Arrangement.SpaceBetween
 ) {
-    val openDialog = remember { mutableStateOf(state.revealAnswer) }
+    val scrollState = ScrollState(0)
 
-    if (openDialog.value) {
-        JeopardyAlertDialog(
-            onDismissRequest = { openDialog.value = false },
-            onConfirmation = { openDialog.value = false },
-            dialogTitle = "test",
-            dialogText = "test"
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(Padding.Large)
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        val openDialog = remember { mutableStateOf(state.revealAnswer) }
+
+        val submittedAnswer = remember { mutableStateOf(state.submittedAnswer.orEmpty()) }
+
+        if (openDialog.value) {
+            JeopardyAlertDialog(
+                onDismissRequest = { openDialog.value = false },
+                onConfirmation = { openDialog.value = false },
+                dialogTitle = "test",
+                dialogText = "test"
+            )
+        }
+
+        JeopardyQuestionBox(state = state)
+
+        Spacer(modifier = Modifier.height(Padding.XXLarge))
+
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = submittedAnswer.value,
+            onValueChange = {
+                submittedAnswer.value = it
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            singleLine = true,
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    handleEvent.invoke(
+                        JeopardyPlayEvent.SendAnswer(
+                            submittedAnswer.value
+                        )
+                    )
+                }
+            )
+        )
+
+        Spacer(modifier = Modifier.height(Padding.Large))
+
+        JeopardyButtonColumn(
+            state = state,
+            onSubmit = {
+                handleEvent.invoke(JeopardyPlayEvent.SendAnswer(submittedAnswer.value))
+            },
+            onSkip = {
+                handleEvent.invoke(JeopardyPlayEvent.GetRandomQuestion)
+            },
+            onReveal = {
+                openDialog.value = true
+                handleEvent.invoke(JeopardyPlayEvent.RevealAnswer)
+            }
         )
     }
-
-    JeopardyQuestionBox(state = state)
-
-    JeopardyButtonColumn(
-        state = state,
-        onSubmit = {
-            handleEvent.invoke(JeopardyPlayEvent.SendAnswer("test"))
-        },
-        onSkip = {
-            handleEvent.invoke(JeopardyPlayEvent.GetRandomQuestion)
-        },
-        onReveal = {
-            openDialog.value = true
-            handleEvent.invoke(JeopardyPlayEvent.RevealAnswer)
-        }
-    )
 }
 
 @Composable
@@ -162,20 +199,24 @@ fun JeopardyButtonColumn(
     onReveal: () -> Unit
 ) = Column(
     modifier = Modifier.fillMaxWidth()
+        .padding(horizontal = Padding.XLarge)
 ) {
     Button(
+        modifier = Modifier.fillMaxWidth(),
         onClick = onSubmit
     ) {
         Text(text = stringResource(id = R.string.jeopardy_submit))
     }
 
     Button(
+        modifier = Modifier.fillMaxWidth(),
         onClick = onSkip
     ) {
         Text(text = stringResource(id = R.string.jeopardy_skip))
     }
 
     Button(
+        modifier = Modifier.fillMaxWidth(),
         onClick = onReveal
     ) {
         Text(text = stringResource(id = R.string.jeopardy_reveal))
