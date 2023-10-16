@@ -1,14 +1,12 @@
 package com.cale.mccammon.jeopardy.feature.presentation
 
+import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,6 +74,8 @@ fun JeopardyStateView(
 ) {
     val scrollState = ScrollState(0)
 
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -84,7 +85,9 @@ fun JeopardyStateView(
     ) {
         val openDialog = remember { mutableStateOf(state.revealAnswer) }
 
-        val submittedAnswer = remember { mutableStateOf(state.submittedAnswer.orEmpty()) }
+        val showToast = remember { mutableStateOf(state.submission?.isCorrect ?: false) }
+
+        val submittedAnswer = remember { mutableStateOf(state.submission?.answer.orEmpty()) }
 
         if (openDialog.value) {
             JeopardyAlertDialog(
@@ -93,6 +96,14 @@ fun JeopardyStateView(
                 dialogTitle = "test",
                 dialogText = "test"
             )
+        }
+
+        state.submission?.let {
+            if (showToast.value) {
+                Toast.makeText(context, "hello", Toast.LENGTH_LONG)
+            } else {
+                Toast.makeText(context, "hi", Toast.LENGTH_LONG)
+            }.show()
         }
 
         JeopardyQuestionBox(state = state)

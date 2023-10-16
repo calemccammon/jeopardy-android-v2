@@ -21,11 +21,16 @@ data class JeopardyQuestion(
     val value: Int
 )
 
+data class JeopardySubmission(
+    val answer: String,
+    val isCorrect: Boolean
+)
+
 data class JeopardyPlayState(
     val isLoading: Boolean = true,
     val question: JeopardyQuestion? = null,
     val revealAnswer: Boolean = false,
-    val submittedAnswer: String? = null
+    val submission: JeopardySubmission? = null
 )
 
 sealed class JeopardyPlayEvent {
@@ -36,6 +41,11 @@ sealed class JeopardyPlayEvent {
     data class SendAnswer(
         val answer: String
     ) : JeopardyPlayEvent()
+
+    data class ShowToast(
+        val isCorrect: Boolean,
+        val value: Int
+    ): JeopardyPlayEvent()
 }
 
 sealed class JeopardyPlayResult {
@@ -44,6 +54,7 @@ sealed class JeopardyPlayResult {
     ): JeopardyPlayResult()
 
     data class AnswerEvaluated(
+        val answer: String,
         val isCorrect: Boolean
     ): JeopardyPlayResult()
 }
@@ -94,6 +105,7 @@ class JeopardyPlayViewModel @Inject constructor(
                             handleResult(
                                 _state.value,
                                 JeopardyPlayResult.AnswerEvaluated(
+                                    event.answer,
                                     isCorrect
                                 )
                             )
@@ -112,14 +124,23 @@ class JeopardyPlayViewModel @Inject constructor(
     override fun handleResult(state: JeopardyPlayState, result: JeopardyPlayResult): JeopardyPlayState {
         return when (result) {
             is JeopardyPlayResult.SetRandomQuestion -> {
-                state.copy(isLoading = false, question = result.question)
+                JeopardyPlayState(
+                    isLoading = false,
+                    result.question,
+                    false,
+                    null
+                )
             }
             is JeopardyPlayResult.AnswerEvaluated -> {
-                component.logger.d(result.toString())
-                state
-            }
-            else -> {
-                state
+                JeopardyPlayState(
+                    isLoading = false,
+                    state.question,
+                    false,
+                    JeopardySubmission(
+                        result.answer,
+                        result.isCorrect
+                    )
+                )
             }
         }.also { newState ->
             with(component.logger) {
