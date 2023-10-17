@@ -1,6 +1,5 @@
 package com.cale.mccammon.jeopardy.feature.presentation
 
-import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +32,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cale.mccammon.jeopardy.feature.R
+import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayEvent
+import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayState
+import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyQuestion
 import com.cale.mccammon.jeopardy.theme.Padding
 
 internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<JeopardyPlayState> {
@@ -74,8 +75,6 @@ fun JeopardyStateView(
 ) {
     val scrollState = ScrollState(0)
 
-    val context = LocalContext.current
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -83,27 +82,31 @@ fun JeopardyStateView(
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        val openDialog = remember { mutableStateOf(state.revealAnswer) }
+        val revealAnswerDialog = remember { mutableStateOf(false) }
 
-        val showToast = remember { mutableStateOf(state.submission?.isCorrect ?: false) }
+        val submitAnswerDialog = remember { mutableStateOf(false) }
 
-        val submittedAnswer = remember { mutableStateOf(state.submission?.answer.orEmpty()) }
+        val submittedAnswer = remember { mutableStateOf("") }
 
-        if (openDialog.value) {
+        submitAnswerDialog.value = state.submission != null
+
+        if (revealAnswerDialog.value) {
             JeopardyAlertDialog(
-                onDismissRequest = { openDialog.value = false },
-                onConfirmation = { openDialog.value = false },
+                onConfirmation = { revealAnswerDialog.value = false },
                 dialogTitle = "test",
                 dialogText = "test"
             )
         }
 
-        state.submission?.let {
-            if (showToast.value) {
-                Toast.makeText(context, "hello", Toast.LENGTH_LONG)
-            } else {
-                Toast.makeText(context, "hi", Toast.LENGTH_LONG)
-            }.show()
+        if (submitAnswerDialog.value) {
+            JeopardyAlertDialog(
+                onConfirmation = {
+                    submitAnswerDialog.value = false
+                    handleEvent.invoke(JeopardyPlayEvent.GetRandomQuestion)
+                },
+                dialogTitle = "test",
+                dialogText = "test"
+            )
         }
 
         JeopardyQuestionBox(state = state)
@@ -132,18 +135,16 @@ fun JeopardyStateView(
         Spacer(modifier = Modifier.height(Padding.Large))
 
         JeopardyButtonColumn(
-            state = state,
             onSubmit = {
                 handleEvent.invoke(JeopardyPlayEvent.SendAnswer(submittedAnswer.value))
             },
             onSkip = {
                 handleEvent.invoke(JeopardyPlayEvent.GetRandomQuestion)
-            },
-            onReveal = {
-                openDialog.value = true
-                handleEvent.invoke(JeopardyPlayEvent.RevealAnswer)
             }
-        )
+        ) {
+            revealAnswerDialog.value = true
+            handleEvent.invoke(JeopardyPlayEvent.RevealAnswer)
+        }
     }
 }
 
@@ -204,12 +205,12 @@ fun JeopardyValueRow(value: String) = Row(
 
 @Composable
 fun JeopardyButtonColumn(
-    state: JeopardyPlayState,
     onSubmit: () -> Unit,
     onSkip: () -> Unit,
     onReveal: () -> Unit
 ) = Column(
-    modifier = Modifier.fillMaxWidth()
+    modifier = Modifier
+        .fillMaxWidth()
         .padding(horizontal = Padding.XLarge)
 ) {
     Button(

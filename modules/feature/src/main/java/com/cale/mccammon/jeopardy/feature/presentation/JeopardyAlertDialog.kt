@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 
 @Composable
 fun JeopardyAlertDialog(
-    onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
     dialogTitle: String,
     dialogText: String
@@ -21,9 +20,7 @@ fun JeopardyAlertDialog(
         text = {
             Text(text = dialogText)
         },
-        onDismissRequest = {
-            onDismissRequest()
-        },
+        onDismissRequest = { },
         confirmButton = {
             TextButton(
                 onClick = {
@@ -31,15 +28,6 @@ fun JeopardyAlertDialog(
                 }
             ) {
                 Text("Confirm")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismissRequest()
-                }
-            ) {
-                Text("Dismiss")
             }
         }
     )

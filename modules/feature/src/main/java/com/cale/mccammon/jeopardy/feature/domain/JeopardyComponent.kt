@@ -7,4 +7,5 @@ interface JeopardyComponent {
     val network: JeopardyNetwork
     val repository: JeopardyRepository
     val logger: JeopardyLogger
+    val modelMapper: JeopardyModelMapper
 }

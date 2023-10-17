@@ -3,8 +3,10 @@ package com.cale.mccammon.jeopardy.feature.presentation
 import androidx.lifecycle.viewModelScope
 import com.cale.mccammon.jeopardy.feature.data.JeopardyInvalidQuestionException
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyComponent
-import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapper
-import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapper.fromHtml
+import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayEvent
+import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayResult
+import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayState
+import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardySubmission
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,51 +15,6 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-
-data class JeopardyQuestion(
-    val category: String,
-    val question: String,
-    val answer: String,
-    val value: Int
-)
-
-data class JeopardySubmission(
-    val answer: String,
-    val isCorrect: Boolean
-)
-
-data class JeopardyPlayState(
-    val isLoading: Boolean = true,
-    val question: JeopardyQuestion? = null,
-    val revealAnswer: Boolean = false,
-    val submission: JeopardySubmission? = null
-)
-
-sealed class JeopardyPlayEvent {
-    object GetRandomQuestion : JeopardyPlayEvent()
-
-    object RevealAnswer : JeopardyPlayEvent()
-
-    data class SendAnswer(
-        val answer: String
-    ) : JeopardyPlayEvent()
-
-    data class ShowToast(
-        val isCorrect: Boolean,
-        val value: Int
-    ): JeopardyPlayEvent()
-}
-
-sealed class JeopardyPlayResult {
-    data class SetRandomQuestion(
-        val question: JeopardyQuestion
-    ): JeopardyPlayResult()
-
-    data class AnswerEvaluated(
-        val answer: String,
-        val isCorrect: Boolean
-    ): JeopardyPlayResult()
-}
 
 @HiltViewModel
 class JeopardyPlayViewModel @Inject constructor(
@@ -91,7 +48,7 @@ class JeopardyPlayViewModel @Inject constructor(
                                 handleResult(
                                     _state.value,
                                     JeopardyPlayResult.SetRandomQuestion(
-                                        JeopardyModelMapper.mapQuestion(
+                                        component.modelMapper.mapQuestion(
                                             questions
                                         )
                                     )
@@ -138,7 +95,8 @@ class JeopardyPlayViewModel @Inject constructor(
                     false,
                     JeopardySubmission(
                         result.answer,
-                        result.isCorrect
+                        result.isCorrect,
+                        component.modelMapper.buildSubmissionAcknowledgment(result.isCorrect)
                     )
                 )
             }
@@ -157,7 +115,7 @@ class JeopardyPlayViewModel @Inject constructor(
      * We also want to get rid of leading articles.
      */
     private fun String.sanitize(): String {
-        return fromHtml().replace(
+        return component.modelMapper.fromHtml(this).replace(
             "the ",
             "",
             true

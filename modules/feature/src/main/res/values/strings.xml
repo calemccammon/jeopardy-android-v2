@@ -3,4 +3,9 @@
     <string name="jeopardy_submit">Submit</string>
     <string name="jeopardy_reveal">Reveal</string>
     <string name="jeopardy_skip">Skip</string>
+    <string name="jeopardy_ok">Ok</string>
+    <string name="jeopardy_correct">Correct</string>
+    <string name="jeopardy_try_again">Try Again</string>
+    <string name="jeopardy_increase">Correct! Your score has increased by %s. It is now %s.</string>
+    <string name="jeopardy_decrease">Incorrect! Your score has decreased by %s. It is now %s.</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.cale.mccammon.jeopardy.android.dependency
 
+import android.app.Application
 import com.cale.mccammon.jeopardy.android.BuildConfig
 import com.cale.mccammon.jeopardy.feature.data.JeopardyRepository
 import com.cale.mccammon.jeopardy.feature.data.JeopardyRepositoryImpl
@@ -8,6 +9,8 @@ import com.cale.mccammon.jeopardy.feature.data.JeopardyNetworkImpl
 import com.cale.mccammon.jeopardy.feature.data.JeopardyNetworkConfig
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyComponent
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyLogger
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapper
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapperImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -46,6 +49,13 @@ class ProvidesJeopardyModule {
             Timber.e(ex)
         }
     }
+
+    @Provides
+    fun provideModelMapper(
+        application: Application
+    ): JeopardyModelMapper = JeopardyModelMapperImpl(
+        application.resources
+    )
 }
 
 @Module(includes = [ProvidesJeopardyModule::class])
