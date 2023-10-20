@@ -35,6 +35,18 @@ class JeopardyPlayViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 when (event) {
+                    is JeopardyPlayEvent.DismissSubmission -> {
+                        if (event.isCorrect) {
+                            handleEvent(JeopardyPlayEvent.GetRandomQuestion)
+                        } else {
+                            _state.tryEmit(
+                                handleResult(
+                                    _state.value,
+                                    JeopardyPlayResult.SubmissionDismissed
+                                )
+                            )
+                        }
+                    }
                     is JeopardyPlayEvent.GetRandomQuestion -> {
                         withContext(Dispatchers.IO) {
                             component.repository.getRandomQuestion()
@@ -80,6 +92,9 @@ class JeopardyPlayViewModel @Inject constructor(
 
     override fun handleResult(state: JeopardyPlayState, result: JeopardyPlayResult): JeopardyPlayState {
         return when (result) {
+            is JeopardyPlayResult.SubmissionDismissed -> {
+                state.copy(submission = null)
+            }
             is JeopardyPlayResult.SetRandomQuestion -> {
                 JeopardyPlayState(
                     isLoading = false,
@@ -89,6 +104,12 @@ class JeopardyPlayViewModel @Inject constructor(
                 )
             }
             is JeopardyPlayResult.AnswerEvaluated -> {
+                if (result.isCorrect) {
+                    component.score.add(state.question!!.value)
+                } else {
+                    component.score.subtract(state.question!!.value)
+                }
+
                 JeopardyPlayState(
                     isLoading = false,
                     state.question,
@@ -96,7 +117,10 @@ class JeopardyPlayViewModel @Inject constructor(
                     JeopardySubmission(
                         result.answer,
                         result.isCorrect,
-                        component.modelMapper.buildSubmissionAcknowledgment(result.isCorrect)
+                        component.modelMapper.buildSubmissionAcknowledgment(
+                            result.isCorrect,
+                            state.question.value
+                        )
                     )
                 )
             }

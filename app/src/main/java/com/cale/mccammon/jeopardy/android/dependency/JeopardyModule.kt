@@ -11,6 +11,10 @@ import com.cale.mccammon.jeopardy.feature.domain.JeopardyComponent
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyLogger
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapper
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapperImpl
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyPreferences
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyPreferencesImpl
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyScore
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyScoreImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -52,9 +56,25 @@ class ProvidesJeopardyModule {
 
     @Provides
     fun provideModelMapper(
-        application: Application
+        application: Application,
+        score: JeopardyScore
     ): JeopardyModelMapper = JeopardyModelMapperImpl(
-        application.resources
+        application.resources,
+        score
+    )
+
+    @Provides
+    fun providePreferences(
+        application: Application
+    ): JeopardyPreferences = JeopardyPreferencesImpl(
+        application
+    )
+
+    @Provides
+    fun provideScore(
+        preferences: JeopardyPreferences
+    ): JeopardyScore = JeopardyScoreImpl(
+        preferences
     )
 }
 

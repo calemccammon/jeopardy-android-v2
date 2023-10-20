@@ -9,4 +9,6 @@ sealed class JeopardyPlayResult {
         val answer: String,
         val isCorrect: Boolean
     ): JeopardyPlayResult()
+
+    object SubmissionDismissed : JeopardyPlayResult()
 }

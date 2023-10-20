@@ -12,11 +12,15 @@ import javax.inject.Inject
 interface JeopardyModelMapper {
     fun mapQuestion(questions: List<Question>): JeopardyQuestion
     fun fromHtml(text: String): String
-    fun buildSubmissionAcknowledgment(isCorrect: Boolean): JeopardyAcknowledgment
+    fun buildSubmissionAcknowledgment(
+        isCorrect: Boolean,
+        value: Int
+    ): JeopardyAcknowledgment
 }
 
 class JeopardyModelMapperImpl @Inject constructor(
-    private val resources: Resources
+    private val resources: Resources,
+    private val score: JeopardyScore
 ): JeopardyModelMapper {
 
     @Throws(JeopardyInvalidQuestionException::class)
@@ -49,13 +53,18 @@ class JeopardyModelMapperImpl @Inject constructor(
             .trim()
     }
 
-    override fun buildSubmissionAcknowledgment(isCorrect: Boolean): JeopardyAcknowledgment {
+    override fun buildSubmissionAcknowledgment(
+        isCorrect: Boolean,
+        value: Int
+    ): JeopardyAcknowledgment {
         return JeopardyAcknowledgment(
             resources.getString(
                 if (isCorrect) R.string.jeopardy_correct else R.string.jeopardy_try_again
             ),
             resources.getString(
-                if (isCorrect) R.string.jeopardy_correct else R.string.jeopardy_try_again
+                if (isCorrect) R.string.jeopardy_increase else R.string.jeopardy_decrease,
+                value.toString(),
+                score.get().toString()
             )
         )
     }

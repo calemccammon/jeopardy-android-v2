@@ -3,6 +3,10 @@ package com.cale.mccammon.jeopardy.feature.presentation.model
 sealed class JeopardyPlayEvent {
     object GetRandomQuestion : JeopardyPlayEvent()
 
+    data class DismissSubmission(
+        val isCorrect: Boolean
+    ): JeopardyPlayEvent()
+
     object RevealAnswer : JeopardyPlayEvent()
 
     data class SendAnswer(

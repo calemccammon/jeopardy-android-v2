@@ -101,11 +101,14 @@ fun JeopardyStateView(
         if (submitAnswerDialog.value) {
             JeopardyAlertDialog(
                 onConfirmation = {
-                    submitAnswerDialog.value = false
-                    handleEvent.invoke(JeopardyPlayEvent.GetRandomQuestion)
+                    handleEvent.invoke(
+                        JeopardyPlayEvent.DismissSubmission(
+                            state.submission!!.isCorrect
+                        )
+                    )
                 },
-                dialogTitle = "test",
-                dialogText = "test"
+                dialogTitle = state.submission!!.acknowledgment.title,
+                dialogText = state.submission.acknowledgment.body
             )
         }
 

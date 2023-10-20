@@ -8,4 +8,6 @@ interface JeopardyComponent {
     val repository: JeopardyRepository
     val logger: JeopardyLogger
     val modelMapper: JeopardyModelMapper
+    val preferences: JeopardyPreferences
+    val score: JeopardyScore
 }

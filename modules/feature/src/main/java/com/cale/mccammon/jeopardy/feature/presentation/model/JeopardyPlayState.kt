@@ -1,5 +1,6 @@
 package com.cale.mccammon.jeopardy.feature.presentation.model
 
+
 data class JeopardyPlayState(
     val isLoading: Boolean = true,
     val question: JeopardyQuestion? = null,
