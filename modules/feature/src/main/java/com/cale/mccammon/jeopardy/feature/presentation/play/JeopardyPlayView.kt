@@ -1,5 +1,6 @@
-package com.cale.mccammon.jeopardy.feature.presentation
+package com.cale.mccammon.jeopardy.feature.presentation.play
 
+import android.text.Html
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -32,9 +34,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cale.mccammon.jeopardy.feature.R
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayEvent
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayState
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyQuestion
+import com.cale.mccammon.jeopardy.feature.presentation.JeopardyAlertDialog
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayEvent
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayState
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyQuestion
 import com.cale.mccammon.jeopardy.theme.Padding
 
 internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<JeopardyPlayState> {
@@ -92,9 +95,18 @@ fun JeopardyStateView(
 
         if (revealAnswerDialog.value) {
             JeopardyAlertDialog(
-                onConfirmation = { revealAnswerDialog.value = false },
-                dialogTitle = "test",
-                dialogText = "test"
+                onConfirmation = { 
+                    revealAnswerDialog.value = false
+                    submittedAnswer.value = ""
+                    handleEvent.invoke(
+                        JeopardyPlayEvent.GetRandomQuestion
+                    )
+                },
+                dialogTitle = stringResource(id = R.string.jeopardy_reveal_answer_title),
+                dialogText = Html.fromHtml(
+                    stringResource(id = R.string.jeopardy_reveal_answer_body, state.question!!.answer),
+                    Html.FROM_HTML_MODE_LEGACY
+                ).toString()
             )
         }
 
@@ -106,6 +118,7 @@ fun JeopardyStateView(
                             state.submission!!.isCorrect
                         )
                     )
+                    submittedAnswer.value = ""
                 },
                 dialogTitle = state.submission!!.acknowledgment.title,
                 dialogText = state.submission.acknowledgment.body
@@ -161,7 +174,9 @@ fun JeopardyQuestionBox(state: JeopardyPlayState) = Column(
 ) {
     when {
         state.isLoading -> {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
         }
         else -> {
             JeopardyCategoryRow(category = state.question!!.category)
@@ -179,7 +194,7 @@ fun JeopardyCategoryRow(category: String) = Row(
     horizontalArrangement = Arrangement.Center,
     verticalAlignment = Alignment.CenterVertically
 ) {
-    Text(text = category)
+    Text(text = category, color = Color.White)
 }
 
 @Composable
@@ -192,7 +207,7 @@ fun JeopardyQuestionRow(question: String) = Row(
     horizontalArrangement = Arrangement.Center,
     verticalAlignment = Alignment.Top
 ) {
-    Text(text = question)
+    Text(text = question, color = Color.White)
 }
 
 @Composable
@@ -203,7 +218,7 @@ fun JeopardyValueRow(value: String) = Row(
     horizontalArrangement = Arrangement.End,
     verticalAlignment = Alignment.Bottom
 ) {
-    Text(text = value)
+    Text(text = value, color = Color.White)
 }
 
 @Composable
@@ -218,21 +233,33 @@ fun JeopardyButtonColumn(
 ) {
     Button(
         modifier = Modifier.fillMaxWidth(),
-        onClick = onSubmit
+        onClick = onSubmit,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Blue,
+            contentColor = Color.White
+        )
     ) {
         Text(text = stringResource(id = R.string.jeopardy_submit))
     }
 
     Button(
         modifier = Modifier.fillMaxWidth(),
-        onClick = onSkip
+        onClick = onSkip,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Blue,
+            contentColor = Color.White
+        )
     ) {
         Text(text = stringResource(id = R.string.jeopardy_skip))
     }
 
     Button(
         modifier = Modifier.fillMaxWidth(),
-        onClick = onReveal
+        onClick = onReveal,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Blue,
+            contentColor = Color.White
+        )
     ) {
         Text(text = stringResource(id = R.string.jeopardy_reveal))
     }

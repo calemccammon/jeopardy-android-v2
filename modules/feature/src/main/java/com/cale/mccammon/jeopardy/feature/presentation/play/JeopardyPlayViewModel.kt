@@ -1,16 +1,18 @@
-package com.cale.mccammon.jeopardy.feature.presentation
+package com.cale.mccammon.jeopardy.feature.presentation.play
 
 import androidx.lifecycle.viewModelScope
 import com.cale.mccammon.jeopardy.feature.data.JeopardyInvalidQuestionException
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyComponent
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayEvent
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayResult
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyPlayState
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardySubmission
+import com.cale.mccammon.jeopardy.feature.presentation.JeopardyViewModel
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayEvent
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayResult
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayState
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardySubmission
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,11 +52,9 @@ class JeopardyPlayViewModel @Inject constructor(
                     is JeopardyPlayEvent.GetRandomQuestion -> {
                         withContext(Dispatchers.IO) {
                             component.repository.getRandomQuestion()
-                        }.retry(
-                            1L
-                        ) {
+                        }.catch {
                             component.logger.e(it)
-                            it is JeopardyInvalidQuestionException
+                            handleEvent(event)
                         }.collect { questions ->
                             _state.tryEmit(
                                 handleResult(
@@ -151,6 +151,12 @@ class JeopardyPlayViewModel @Inject constructor(
             "an ",
             "",
             true
+        ).replace(
+            "\"",
+            ""
+        ).replace(
+            "\'",
+            ""
         ).lowercase()
     }
 }

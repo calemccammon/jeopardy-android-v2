@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.cale.mccammon.jeopardy.feature.presentation.JeopardyView
+import com.cale.mccammon.jeopardy.feature.presentation.play.JeopardyView
 import com.cale.mccammon.jeopardy.theme.JeopardyAndroidTheme
 import dagger.hilt.android.AndroidEntryPoint
 

@@ -1,4 +1,4 @@
-package com.cale.mccammon.jeopardy.feature.presentation.model
+package com.cale.mccammon.jeopardy.feature.presentation.play.model
 
 data class JeopardySubmission(
     val answer: String,

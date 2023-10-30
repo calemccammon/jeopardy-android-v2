@@ -5,8 +5,8 @@ import android.text.Html
 import com.cale.mccammon.jeopardy.feature.R
 import com.cale.mccammon.jeopardy.feature.data.JeopardyInvalidQuestionException
 import com.cale.mccammon.jeopardy.feature.data.model.Question
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyAcknowledgment
-import com.cale.mccammon.jeopardy.feature.presentation.model.JeopardyQuestion
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyAcknowledgment
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyQuestion
 import javax.inject.Inject
 
 interface JeopardyModelMapper {
