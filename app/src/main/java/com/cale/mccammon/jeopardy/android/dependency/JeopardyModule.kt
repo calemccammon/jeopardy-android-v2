@@ -8,6 +8,8 @@ import com.cale.mccammon.jeopardy.feature.data.JeopardyNetwork
 import com.cale.mccammon.jeopardy.feature.data.JeopardyNetworkImpl
 import com.cale.mccammon.jeopardy.feature.data.JeopardyNetworkConfig
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyComponent
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyHistory
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyHistoryImpl
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyLogger
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapper
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapperImpl
@@ -74,6 +76,13 @@ class ProvidesJeopardyModule {
     fun provideScore(
         preferences: JeopardyPreferences
     ): JeopardyScore = JeopardyScoreImpl(
+        preferences
+    )
+
+    @Provides
+    fun provideHistory(
+        preferences: JeopardyPreferences
+    ): JeopardyHistory = JeopardyHistoryImpl(
         preferences
     )
 }

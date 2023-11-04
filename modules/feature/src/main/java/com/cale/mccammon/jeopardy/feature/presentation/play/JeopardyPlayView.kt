@@ -45,6 +45,7 @@ internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<Jeop
         JeopardyPlayState(
             false,
             JeopardyQuestion(
+                0,
                 "Category",
                 "Question",
                 "Answer",

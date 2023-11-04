@@ -10,4 +10,5 @@ interface JeopardyComponent {
     val modelMapper: JeopardyModelMapper
     val preferences: JeopardyPreferences
     val score: JeopardyScore
+    val history: JeopardyHistory
 }

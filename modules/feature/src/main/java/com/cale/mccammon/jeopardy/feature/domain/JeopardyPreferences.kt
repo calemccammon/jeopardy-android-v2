@@ -2,12 +2,13 @@ package com.cale.mccammon.jeopardy.feature.domain
 
 import android.app.Application
 import android.content.Context
-import android.content.SharedPreferences
 import javax.inject.Inject
 
 interface JeopardyPreferences {
     fun putInt(key: String, value: Int)
-    fun getInt(key: String, default: Int): Int
+    fun getInt(key: String, value: Int): Int
+    fun putString(key: String, value: String)
+    fun getString(key: String, value: String): String
 }
 
 class JeopardyPreferencesImpl @Inject constructor(
@@ -22,7 +23,15 @@ class JeopardyPreferencesImpl @Inject constructor(
         preferences.edit().putInt(key, value).apply()
     }
 
-    override fun getInt(key: String, default: Int): Int {
-        return preferences.getInt(key, default)
+    override fun getInt(key: String, value: Int): Int {
+        return preferences.getInt(key, value)
+    }
+
+    override fun putString(key: String, value: String) {
+        preferences.edit().putString(key, value).apply()
+    }
+
+    override fun getString(key: String, value: String): String {
+        return preferences.getString(key, value) ?: value
     }
 }

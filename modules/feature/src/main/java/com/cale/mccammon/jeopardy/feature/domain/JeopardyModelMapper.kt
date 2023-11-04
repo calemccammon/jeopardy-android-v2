@@ -31,13 +31,15 @@ class JeopardyModelMapperImpl @Inject constructor(
             val isInvalid = category?.title.isNullOrBlank()
                     || question.isNullOrBlank()
                     || answer.isNullOrBlank()
-                    || value == null
+                    || id == null || id == 0
+                    || value == null || value == 0
 
             if (isInvalid) {
                 throw JeopardyInvalidQuestionException(this)
             }
         }.let {
             JeopardyQuestion(
+                it.id!!,
                 fromHtml(it.category!!.title!!),
                 fromHtml(it.question!!),
                 it.answer!!,

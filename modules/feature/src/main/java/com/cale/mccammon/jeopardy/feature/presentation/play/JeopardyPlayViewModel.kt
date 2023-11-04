@@ -8,6 +8,7 @@ import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayEv
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayResult
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayState
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardySubmission
+import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyHistoryItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -104,10 +105,27 @@ class JeopardyPlayViewModel @Inject constructor(
                 )
             }
             is JeopardyPlayResult.AnswerEvaluated -> {
-                if (result.isCorrect) {
+                val isInHistory = component.history.get()
+                    .find {
+                        it.question.id == state.question!!.id
+                    } != null
+
+                if (!isInHistory && result.isCorrect) {
                     component.score.add(state.question!!.value)
-                } else {
+                    component.history.add(
+                        JeopardyHistoryItem(
+                            state.question,
+                            "+${state.question.value}"
+                        )
+                    )
+                } else if (!isInHistory) {
                     component.score.subtract(state.question!!.value)
+                    component.history.add(
+                        JeopardyHistoryItem(
+                            state.question,
+                            "-${state.question.value}"
+                        )
+                    )
                 }
 
                 JeopardyPlayState(
@@ -119,7 +137,7 @@ class JeopardyPlayViewModel @Inject constructor(
                         result.isCorrect,
                         component.modelMapper.buildSubmissionAcknowledgment(
                             result.isCorrect,
-                            state.question.value
+                            state.question!!.value
                         )
                     )
                 )
