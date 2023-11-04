@@ -9,6 +9,7 @@ interface JeopardyPreferences {
     fun getInt(key: String, value: Int): Int
     fun putString(key: String, value: String)
     fun getString(key: String, value: String): String
+    fun clear()
 }
 
 class JeopardyPreferencesImpl @Inject constructor(
@@ -33,5 +34,9 @@ class JeopardyPreferencesImpl @Inject constructor(
 
     override fun getString(key: String, value: String): String {
         return preferences.getString(key, value) ?: value
+    }
+
+    override fun clear() {
+        preferences.edit().clear().apply()
     }
 }

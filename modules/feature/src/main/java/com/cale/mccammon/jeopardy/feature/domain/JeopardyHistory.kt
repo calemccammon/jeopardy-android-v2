@@ -29,7 +29,7 @@ class JeopardyHistoryImpl @Inject constructor(
 
     override fun add(item: JeopardyHistoryItem) {
         val list = get().toMutableList()
-        list.add(item)
+        list.add(0, item)
         preferences.putString(
             HISTORY_PREF_KEY,
             gson.toJson(

@@ -156,7 +156,7 @@ fun JeopardyStateView(
                 handleEvent.invoke(JeopardyPlayEvent.SendAnswer(submittedAnswer.value))
             },
             onSkip = {
-                handleEvent.invoke(JeopardyPlayEvent.GetRandomQuestion)
+                handleEvent.invoke(JeopardyPlayEvent.SkipQuestion)
             }
         ) {
             revealAnswerDialog.value = true

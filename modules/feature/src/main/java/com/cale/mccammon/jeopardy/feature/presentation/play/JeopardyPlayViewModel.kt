@@ -1,12 +1,14 @@
 package com.cale.mccammon.jeopardy.feature.presentation.play
 
+import android.app.Application
 import androidx.lifecycle.viewModelScope
-import com.cale.mccammon.jeopardy.feature.data.JeopardyInvalidQuestionException
+import com.cale.mccammon.jeopardy.feature.R
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyComponent
 import com.cale.mccammon.jeopardy.feature.presentation.JeopardyViewModel
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayEvent
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayResult
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayState
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyQuestion
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardySubmission
 import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyHistoryItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,14 +16,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class JeopardyPlayViewModel @Inject constructor(
-    private val component: JeopardyComponent
+    private val component: JeopardyComponent,
+    private val application: Application
 ) : JeopardyViewModel<JeopardyPlayState, JeopardyPlayEvent, JeopardyPlayResult>() {
 
     override val initialState: JeopardyPlayState = JeopardyPlayState()
@@ -49,6 +51,10 @@ class JeopardyPlayViewModel @Inject constructor(
                                 )
                             )
                         }
+                    }
+                    is JeopardyPlayEvent.SkipQuestion -> {
+                        addToHistory(_state.value.question!!, null)
+                        handleEvent(JeopardyPlayEvent.GetRandomQuestion)
                     }
                     is JeopardyPlayEvent.GetRandomQuestion -> {
                         withContext(Dispatchers.IO) {
@@ -81,8 +87,10 @@ class JeopardyPlayViewModel @Inject constructor(
                             )
                         )
                     }
-                    else -> {
-
+                    is JeopardyPlayEvent.RevealAnswer -> {
+                        if (_state.value.submission == null) {
+                            addToHistory(_state.value.question!!, null)
+                        }
                     }
                 }
             } catch (ex: Exception) {
@@ -112,20 +120,10 @@ class JeopardyPlayViewModel @Inject constructor(
 
                 if (!isInHistory && result.isCorrect) {
                     component.score.add(state.question!!.value)
-                    component.history.add(
-                        JeopardyHistoryItem(
-                            state.question,
-                            "+${state.question.value}"
-                        )
-                    )
+                    addToHistory(state.question, true)
                 } else if (!isInHistory) {
                     component.score.subtract(state.question!!.value)
-                    component.history.add(
-                        JeopardyHistoryItem(
-                            state.question,
-                            "-${state.question.value}"
-                        )
-                    )
+                    addToHistory(state.question, false)
                 }
 
                 JeopardyPlayState(
@@ -137,7 +135,8 @@ class JeopardyPlayViewModel @Inject constructor(
                         result.isCorrect,
                         component.modelMapper.buildSubmissionAcknowledgment(
                             result.isCorrect,
-                            state.question!!.value
+                            state.question!!.value,
+                            isInHistory
                         )
                     )
                 )
@@ -176,5 +175,30 @@ class JeopardyPlayViewModel @Inject constructor(
             "\'",
             ""
         ).lowercase()
+    }
+
+    private fun addToHistory(question: JeopardyQuestion, isCorrect: Boolean?) {
+        val contains = component.history.get().find { it.question.id == question.id } != null
+
+        if (contains) {
+            return
+        }
+
+        JeopardyHistoryItem(
+            question,
+            when (isCorrect) {
+                true -> {
+                    "+${question.value}"
+                }
+                false -> {
+                    "-${question.value}"
+                }
+                else -> {
+                   application.getString(R.string.jeopardy_skipped)
+                }
+            }
+        ).let {
+            component.history.add(it)
+        }
     }
 }

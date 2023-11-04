@@ -14,7 +14,8 @@ interface JeopardyModelMapper {
     fun fromHtml(text: String): String
     fun buildSubmissionAcknowledgment(
         isCorrect: Boolean,
-        value: Int
+        value: Int,
+        isInHistory: Boolean
     ): JeopardyAcknowledgment
 }
 
@@ -57,17 +58,28 @@ class JeopardyModelMapperImpl @Inject constructor(
 
     override fun buildSubmissionAcknowledgment(
         isCorrect: Boolean,
-        value: Int
+        value: Int,
+        isInHistory: Boolean
     ): JeopardyAcknowledgment {
         return JeopardyAcknowledgment(
             resources.getString(
-                if (isCorrect) R.string.jeopardy_correct else R.string.jeopardy_try_again
+                if (isCorrect && !isInHistory) R.string.jeopardy_correct else R.string.jeopardy_try_again
             ),
-            resources.getString(
-                if (isCorrect) R.string.jeopardy_increase else R.string.jeopardy_decrease,
-                value.toString(),
-                score.get().toString()
-            )
+            when {
+                isCorrect && isInHistory -> {
+                    resources.getString(R.string.jeopardy_score_remains_correct, score.get().toString())
+                }
+                !isCorrect && isInHistory -> {
+                    resources.getString(R.string.jeopardy_score_remains_incorrect, score.get().toString())
+                }
+                else -> {
+                    resources.getString(
+                        if (isCorrect) R.string.jeopardy_increase else R.string.jeopardy_decrease,
+                        value.toString(),
+                        score.get().toString()
+                    )
+                }
+            }
         )
     }
 }

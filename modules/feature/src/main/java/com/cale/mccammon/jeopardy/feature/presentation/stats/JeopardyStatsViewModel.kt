@@ -32,17 +32,55 @@ class JeopardyStatsViewModel @Inject constructor(
         state: JeopardyStatsState,
         result: JeopardyStatsResult
     ): JeopardyStatsState {
-        return state
+        return when (result) {
+            is JeopardyStatsResult.ExpandedItem -> {
+                state.copy(
+                    expandedItem = result.item
+                )
+            }
+            is JeopardyStatsResult.ShowingStats -> {
+                state.copy(
+                    history = component.history.get(),
+                    totalScore = component.score.get()
+                )
+            }
+            is JeopardyStatsResult.StatsCleared -> {
+                JeopardyStatsState(emptyList(), 0)
+            }
+        }
     }
 
     override fun handleEvent(event: JeopardyStatsEvent) {
         viewModelScope.launch {
             when (event) {
+                is JeopardyStatsEvent.ExpandItem -> {
+                    _state.tryEmit(
+                        handleResult(
+                            _state.value,
+                            JeopardyStatsResult.ExpandedItem(
+                                item = if (event.item == _state.value.expandedItem) {
+                                    null
+                                } else {
+                                    event.item
+                                }
+                            )
+                        )
+                    )
+                }
                 is JeopardyStatsEvent.ShowStats -> {
                     _state.tryEmit(
-                        JeopardyStatsState(
-                            component.history.get(),
-                            component.score.get()
+                        handleResult(
+                            _state.value,
+                            JeopardyStatsResult.ShowingStats
+                        )
+                    )
+                }
+                is JeopardyStatsEvent.ClearStats -> {
+                    component.preferences.clear()
+                    _state.tryEmit(
+                        handleResult(
+                            _state.value,
+                            JeopardyStatsResult.StatsCleared
                         )
                     )
                 }
