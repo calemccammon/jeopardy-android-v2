@@ -5,27 +5,22 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,7 +28,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.cale.mccammon.jeopardy.feature.R
-import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlayEvent
 import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyStatsEvent
 import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyStatsState
 import com.cale.mccammon.jeopardy.theme.Padding
@@ -74,25 +68,34 @@ fun JeopardyStatsStateView(
     ) {
         item {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(
+                    horizontal = Padding.Medium,
+                    vertical = Padding.Small
+                ),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(0.50f),
                     text = stringResource(id = R.string.jeopardy_total_score),
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.Bold
                 )
 
                 Text(
                     modifier = Modifier.fillMaxWidth(0.50f),
                     text = state.totalScore.toString(),
-                    textAlign = TextAlign.End
+                    textAlign = TextAlign.End,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
 
         item {
             Button(
+                modifier = Modifier.fillMaxWidth().padding(
+                    horizontal = Padding.Large,
+                    vertical = Padding.Small
+                ),
                 onClick = { handleEvent.invoke(JeopardyStatsEvent.ClearStats) }
             ) {
                 Text(text = stringResource(id = R.string.jeopardy_clear))
