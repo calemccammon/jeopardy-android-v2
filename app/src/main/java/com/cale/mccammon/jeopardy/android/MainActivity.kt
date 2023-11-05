@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
@@ -34,7 +33,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.cale.mccammon.jeopardy.feature.presentation.play.JeopardyView
+import com.cale.mccammon.jeopardy.feature.presentation.play.JeopardyPlayView
 import com.cale.mccammon.jeopardy.feature.presentation.stats.JeopardyStatsView
 import com.cale.mccammon.jeopardy.theme.JeopardyAndroidTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -119,7 +118,7 @@ class MainActivity : ComponentActivity() {
     private fun Navigation(navController: NavHostController) {
         NavHost(navController, startDestination = NavigationItem.Home.route) {
             composable(NavigationItem.Home.route) {
-                JeopardyView()
+                JeopardyPlayView()
             }
             composable(NavigationItem.History.route) {
                 JeopardyStatsView()

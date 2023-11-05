@@ -28,6 +28,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.cale.mccammon.jeopardy.feature.R
+import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyHistoryItem
 import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyStatsEvent
 import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyStatsState
 import com.cale.mccammon.jeopardy.theme.Padding
@@ -67,72 +68,96 @@ fun JeopardyStatsStateView(
         )
     ) {
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(
-                    horizontal = Padding.Medium,
-                    vertical = Padding.Small
-                ),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    modifier = Modifier.fillMaxWidth(0.50f),
-                    text = stringResource(id = R.string.jeopardy_total_score),
-                    textAlign = TextAlign.Start,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    modifier = Modifier.fillMaxWidth(0.50f),
-                    text = state.totalScore.toString(),
-                    textAlign = TextAlign.End,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            TotalScoreRow(state = state)
         }
 
         item {
-            Button(
-                modifier = Modifier.fillMaxWidth().padding(
-                    horizontal = Padding.Large,
-                    vertical = Padding.Small
-                ),
-                onClick = { handleEvent.invoke(JeopardyStatsEvent.ClearStats) }
-            ) {
-                Text(text = stringResource(id = R.string.jeopardy_clear))
-            }
+            ClearStatsButton(handleEvent = handleEvent)
         }
 
         items(state.history, key = { it.question.id }) { item ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Blue)
-                    .padding(Padding.XSmall),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(0.55f)
-                        .clickable {
-                            handleEvent.invoke(JeopardyStatsEvent.ExpandItem(item))
-                        },
-                    text = item.question.question,
-                    maxLines = if (item == state.expandedItem) Int.MAX_VALUE else 1,
-                    textAlign = TextAlign.Start,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color.White
-                )
-                Text(
-                    modifier = Modifier.fillMaxWidth(0.45f),
-                    text = item.scoreEffect,
-                    textAlign = TextAlign.End,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Color.White
-                )
-            }
+           HistoryRow(item = item, state = state, handleEvent = handleEvent)
         }
     }
+}
+
+@Composable
+@Suppress("MagicNumber")
+private fun HistoryRow(
+    item: JeopardyHistoryItem,
+    state: JeopardyStatsState,
+    handleEvent: (JeopardyStatsEvent) -> Unit
+) = Row(
+    modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.Blue)
+        .padding(Padding.XSmall),
+    horizontalArrangement = Arrangement.SpaceBetween
+) {
+    Text(
+        modifier = Modifier
+            .fillMaxWidth(0.55f)
+            .clickable {
+                handleEvent.invoke(JeopardyStatsEvent.ExpandItem(item))
+            },
+        text = item.question.question,
+        maxLines = if (item == state.expandedItem) Int.MAX_VALUE else 1,
+        textAlign = TextAlign.Start,
+        overflow = TextOverflow.Ellipsis,
+        color = Color.White
+    )
+    Text(
+        modifier = Modifier.fillMaxWidth(0.45f),
+        text = item.scoreEffect,
+        textAlign = TextAlign.End,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        color = Color.White
+    )
+}
+
+@Composable
+@Suppress("MagicNumber")
+private fun ClearStatsButton(
+    handleEvent: (JeopardyStatsEvent) -> Unit
+) = Button(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(
+            horizontal = Padding.Large,
+            vertical = Padding.Small
+        ),
+    onClick = { handleEvent.invoke(JeopardyStatsEvent.ClearStats) }
+) {
+    Text(text = stringResource(id = R.string.jeopardy_clear))
+}
+
+@Composable
+@Suppress("MagicNumber")
+private fun TotalScoreRow(
+    state: JeopardyStatsState
+) = Row(
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(
+            horizontal = Padding.Medium,
+            vertical = Padding.Small
+        ),
+    horizontalArrangement = Arrangement.SpaceBetween
+) {
+    Text(
+        modifier = Modifier.fillMaxWidth(0.50f),
+        text = stringResource(id = R.string.jeopardy_total_score),
+        textAlign = TextAlign.Start,
+        fontWeight = FontWeight.Bold
+    )
+
+    Text(
+        modifier = Modifier.fillMaxWidth(0.50f),
+        text = state.totalScore.toString(),
+        textAlign = TextAlign.End,
+        fontWeight = FontWeight.Bold
+    )
 }
 
 @Composable

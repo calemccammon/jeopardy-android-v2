@@ -36,6 +36,7 @@ class JeopardyPlayViewModel @Inject constructor(
         handleEvent(JeopardyPlayEvent.GetRandomQuestion)
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override fun handleEvent(event: JeopardyPlayEvent) {
         viewModelScope.launch {
             try {
@@ -57,23 +58,7 @@ class JeopardyPlayViewModel @Inject constructor(
                         handleEvent(JeopardyPlayEvent.GetRandomQuestion)
                     }
                     is JeopardyPlayEvent.GetRandomQuestion -> {
-                        withContext(Dispatchers.IO) {
-                            component.repository.getRandomQuestion()
-                        }.retry {
-                            component.logger.e(it)
-                            true
-                        }.collect { questions ->
-                            _state.tryEmit(
-                                handleResult(
-                                    _state.value,
-                                    JeopardyPlayResult.SetRandomQuestion(
-                                        component.modelMapper.mapQuestion(
-                                            questions
-                                        )
-                                    )
-                                )
-                            )
-                        }
+                        fetchRandomQuestion()
                     }
                     is JeopardyPlayEvent.SendAnswer -> {
                         val isCorrect = event.answer.sanitize() == _state.value.question?.answer?.sanitize()
@@ -96,6 +81,26 @@ class JeopardyPlayViewModel @Inject constructor(
             } catch (ex: Exception) {
                 component.logger.e(ex)
             }
+        }
+    }
+
+    private suspend fun fetchRandomQuestion() {
+        withContext(Dispatchers.IO) {
+            component.repository.getRandomQuestion()
+        }.retry {
+            component.logger.e(it)
+            true
+        }.collect { questions ->
+            _state.tryEmit(
+                handleResult(
+                    _state.value,
+                    JeopardyPlayResult.SetRandomQuestion(
+                        component.modelMapper.mapQuestion(
+                            questions
+                        )
+                    )
+                )
+            )
         }
     }
 

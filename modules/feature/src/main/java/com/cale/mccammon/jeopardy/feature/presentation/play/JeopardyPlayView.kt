@@ -20,6 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,25 +41,8 @@ import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyPlaySt
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyQuestion
 import com.cale.mccammon.jeopardy.theme.Padding
 
-internal class JeopardyStateViewPreviewParameter : PreviewParameterProvider<JeopardyPlayState> {
-    override val values: Sequence<JeopardyPlayState> = sequenceOf(
-        JeopardyPlayState(
-            false,
-            JeopardyQuestion(
-                0,
-                "Category",
-                "Question",
-                "Answer",
-                100
-            ),
-            false,
-            null
-        )
-    )
-}
-
 @Composable
-fun JeopardyView(
+fun JeopardyPlayView(
     viewModel: JeopardyPlayViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -72,7 +56,7 @@ fun JeopardyView(
 
 @Preview(showBackground = true)
 @Composable
-fun JeopardyStateView(
+private fun JeopardyStateView(
     @PreviewParameter(JeopardyStateViewPreviewParameter::class)
     state: JeopardyPlayState,
     handleEvent: (JeopardyPlayEvent) -> Unit = { }
@@ -87,77 +71,34 @@ fun JeopardyStateView(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         val revealAnswerDialog = remember { mutableStateOf(false) }
-
         val submitAnswerDialog = remember { mutableStateOf(false) }
-
         val submittedAnswer = remember { mutableStateOf("") }
-
         submitAnswerDialog.value = state.submission != null
 
         if (revealAnswerDialog.value) {
-            JeopardyAlertDialog(
-                onConfirmation = { 
-                    revealAnswerDialog.value = false
-                    submittedAnswer.value = ""
-                    handleEvent.invoke(
-                        JeopardyPlayEvent.GetRandomQuestion
-                    )
-                },
-                dialogTitle = stringResource(id = R.string.jeopardy_reveal_answer_title),
-                dialogText = Html.fromHtml(
-                    stringResource(id = R.string.jeopardy_reveal_answer_body, state.question!!.answer),
-                    Html.FROM_HTML_MODE_LEGACY
-                ).toString()
+            JeopardyRevealAnswerDialog(
+                revealAnswerDialog = revealAnswerDialog,
+                submittedAnswer = submittedAnswer,
+                handleEvent = handleEvent,
+                state = state
             )
         }
 
         if (submitAnswerDialog.value) {
-            JeopardyAlertDialog(
-                onConfirmation = {
-                    handleEvent.invoke(
-                        JeopardyPlayEvent.DismissSubmission(
-                            state.submission!!.isCorrect
-                        )
-                    )
-                    submittedAnswer.value = ""
-                },
-                dialogTitle = state.submission!!.acknowledgment.title,
-                dialogText = state.submission.acknowledgment.body
+            JeopardyEvaluateAnswerDialog(
+                submittedAnswer = submittedAnswer,
+                handleEvent = handleEvent,
+                state = state
             )
         }
 
         JeopardyQuestionBox(state = state)
-
         Spacer(modifier = Modifier.height(Padding.XXLarge))
-
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = submittedAnswer.value,
-            onValueChange = {
-                submittedAnswer.value = it
-            },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            singleLine = true,
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    handleEvent.invoke(
-                        JeopardyPlayEvent.SendAnswer(
-                            submittedAnswer.value
-                        )
-                    )
-                }
-            )
-        )
-
+        JeopardyInputField(submittedAnswer = submittedAnswer, handleEvent = handleEvent)
         Spacer(modifier = Modifier.height(Padding.Large))
-
         JeopardyButtonColumn(
-            onSubmit = {
-                handleEvent.invoke(JeopardyPlayEvent.SendAnswer(submittedAnswer.value))
-            },
-            onSkip = {
-                handleEvent.invoke(JeopardyPlayEvent.SkipQuestion)
-            }
+            onSubmit = { handleEvent.invoke(JeopardyPlayEvent.SendAnswer(submittedAnswer.value)) },
+            onSkip = { handleEvent.invoke(JeopardyPlayEvent.SkipQuestion) }
         ) {
             revealAnswerDialog.value = true
             handleEvent.invoke(JeopardyPlayEvent.RevealAnswer)
@@ -166,7 +107,71 @@ fun JeopardyStateView(
 }
 
 @Composable
-fun JeopardyQuestionBox(state: JeopardyPlayState) = Column(
+private fun JeopardyEvaluateAnswerDialog(
+    submittedAnswer: MutableState<String>,
+    handleEvent: (JeopardyPlayEvent) -> Unit,
+    state: JeopardyPlayState
+) = JeopardyAlertDialog(
+    onConfirmation = {
+        handleEvent.invoke(
+            JeopardyPlayEvent.DismissSubmission(
+                state.submission!!.isCorrect
+            )
+        )
+        submittedAnswer.value = ""
+    },
+    dialogTitle = state.submission!!.acknowledgment.title,
+    dialogText = state.submission.acknowledgment.body
+)
+
+@Composable
+private fun JeopardyRevealAnswerDialog(
+    revealAnswerDialog: MutableState<Boolean>,
+    submittedAnswer: MutableState<String>,
+    handleEvent: (JeopardyPlayEvent) -> Unit,
+    state: JeopardyPlayState
+) = JeopardyAlertDialog(
+    onConfirmation = {
+        revealAnswerDialog.value = false
+        submittedAnswer.value = ""
+        handleEvent.invoke(
+            JeopardyPlayEvent.GetRandomQuestion
+        )
+    },
+    dialogTitle = stringResource(id = R.string.jeopardy_reveal_answer_title),
+    dialogText = Html.fromHtml(
+        stringResource(id = R.string.jeopardy_reveal_answer_body, state.question!!.answer),
+        Html.FROM_HTML_MODE_LEGACY
+    ).toString()
+)
+
+
+
+@Composable
+private fun JeopardyInputField(
+    submittedAnswer: MutableState<String>,
+    handleEvent: (JeopardyPlayEvent) -> Unit
+) = OutlinedTextField(
+    modifier = Modifier.fillMaxWidth(),
+    value = submittedAnswer.value,
+    onValueChange = {
+        submittedAnswer.value = it
+    },
+    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+    singleLine = true,
+    keyboardActions = KeyboardActions(
+        onDone = {
+            handleEvent.invoke(
+                JeopardyPlayEvent.SendAnswer(
+                    submittedAnswer.value
+                )
+            )
+        }
+    )
+)
+
+@Composable
+private fun JeopardyQuestionBox(state: JeopardyPlayState) = Column(
     modifier = Modifier
         .fillMaxWidth()
         .background(Color.Blue)
@@ -190,7 +195,7 @@ fun JeopardyQuestionBox(state: JeopardyPlayState) = Column(
 
 
 @Composable
-fun JeopardyCategoryRow(category: String) = Row(
+private fun JeopardyCategoryRow(category: String) = Row(
     modifier = Modifier.fillMaxWidth(),
     horizontalArrangement = Arrangement.Center,
     verticalAlignment = Alignment.CenterVertically
@@ -199,7 +204,7 @@ fun JeopardyCategoryRow(category: String) = Row(
 }
 
 @Composable
-fun JeopardyQuestionRow(question: String) = Row(
+private fun JeopardyQuestionRow(question: String) = Row(
     modifier = Modifier
         .fillMaxWidth()
         .padding(
@@ -212,7 +217,7 @@ fun JeopardyQuestionRow(question: String) = Row(
 }
 
 @Composable
-fun JeopardyValueRow(value: String) = Row(
+private fun JeopardyValueRow(value: String) = Row(
     modifier = Modifier
         .fillMaxWidth()
         .background(Color.Blue),
@@ -223,7 +228,7 @@ fun JeopardyValueRow(value: String) = Row(
 }
 
 @Composable
-fun JeopardyButtonColumn(
+private fun JeopardyButtonColumn(
     onSubmit: () -> Unit,
     onSkip: () -> Unit,
     onReveal: () -> Unit
@@ -264,4 +269,22 @@ fun JeopardyButtonColumn(
     ) {
         Text(text = stringResource(id = R.string.jeopardy_reveal))
     }
+}
+
+@Suppress("MagicNumber")
+private class JeopardyStateViewPreviewParameter : PreviewParameterProvider<JeopardyPlayState> {
+    override val values: Sequence<JeopardyPlayState> = sequenceOf(
+        JeopardyPlayState(
+            false,
+            JeopardyQuestion(
+                0,
+                "Category",
+                "Question",
+                "Answer",
+                100
+            ),
+            false,
+            null
+        )
+    )
 }
