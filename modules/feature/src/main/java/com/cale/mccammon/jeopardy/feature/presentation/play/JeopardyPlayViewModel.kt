@@ -15,7 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -53,15 +53,15 @@ class JeopardyPlayViewModel @Inject constructor(
                         }
                     }
                     is JeopardyPlayEvent.SkipQuestion -> {
-                        addToHistory(_state.value.question!!, null)
+                        addToHistory(_state.value.question, null)
                         handleEvent(JeopardyPlayEvent.GetRandomQuestion)
                     }
                     is JeopardyPlayEvent.GetRandomQuestion -> {
                         withContext(Dispatchers.IO) {
                             component.repository.getRandomQuestion()
-                        }.catch {
+                        }.retry {
                             component.logger.e(it)
-                            handleEvent(event)
+                            true
                         }.collect { questions ->
                             _state.tryEmit(
                                 handleResult(
@@ -89,7 +89,7 @@ class JeopardyPlayViewModel @Inject constructor(
                     }
                     is JeopardyPlayEvent.RevealAnswer -> {
                         if (_state.value.submission == null) {
-                            addToHistory(_state.value.question!!, null)
+                            addToHistory(_state.value.question, null)
                         }
                     }
                 }
@@ -113,6 +113,10 @@ class JeopardyPlayViewModel @Inject constructor(
                 )
             }
             is JeopardyPlayResult.AnswerEvaluated -> {
+                if (result.answer.isBlank()) {
+                    return state
+                }
+
                 val isInHistory = component.history.get()
                     .find {
                         it.question.id == state.question!!.id
@@ -177,7 +181,11 @@ class JeopardyPlayViewModel @Inject constructor(
         ).lowercase()
     }
 
-    private fun addToHistory(question: JeopardyQuestion, isCorrect: Boolean?) {
+    private fun addToHistory(question: JeopardyQuestion?, isCorrect: Boolean?) {
+        if (question == null) {
+            return
+        }
+
         val contains = component.history.get().find { it.question.id == question.id } != null
 
         if (contains) {

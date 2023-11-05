@@ -3,6 +3,7 @@ package com.cale.mccammon.jeopardy.android
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.List
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -25,6 +27,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -90,8 +93,8 @@ class MainActivity : ComponentActivity() {
             items.forEachIndexed { index, item ->
                 NavigationBarItem(
                     alwaysShowLabel = true,
-                    icon = { Icon(item.icon!!, contentDescription = item.title) },
-                    label = { Text(item.title) },
+                    icon = { Icon(item.icon!!, contentDescription = stringResource(id = item.title)) },
+                    label = { Text(stringResource(id = item.title)) },
                     selected = selectedItem == index,
                     onClick = {
                         selectedItem = index
@@ -100,6 +103,7 @@ class MainActivity : ComponentActivity() {
                             navController.graph.startDestinationRoute?.let { route ->
                                 popUpTo(route) {
                                     saveState = true
+                                    inclusive = true
                                 }
                             }
                             launchSingleTop = true
@@ -123,8 +127,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private sealed class NavigationItem(var route: String, val icon: ImageVector?, var title: String) {
-        object Home : NavigationItem("Home", Icons.Rounded.Home, "Home")
-        object History : NavigationItem("History", Icons.Rounded.List, "History")
+    private sealed class NavigationItem(
+        val route: String,
+        val icon: ImageVector?,
+        @StringRes val title: Int
+    ) {
+        object Home : NavigationItem("Play", Icons.Rounded.PlayArrow, R.string.play)
+        object History : NavigationItem("Stats", Icons.Rounded.List, R.string.stats)
     }
 }
