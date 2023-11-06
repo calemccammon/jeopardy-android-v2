@@ -33,8 +33,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.cale.mccammon.jeopardy.feature.presentation.play.JeopardyPlayView
-import com.cale.mccammon.jeopardy.feature.presentation.stats.JeopardyStatsView
+import com.cale.mccammon.jeopardy.feature.presentation.play.compose.JeopardyPlayView
+import com.cale.mccammon.jeopardy.feature.presentation.stats.compose.JeopardyStatsView
 import com.cale.mccammon.jeopardy.theme.JeopardyAndroidTheme
 import dagger.hilt.android.AndroidEntryPoint
 

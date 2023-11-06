@@ -4,6 +4,32 @@ plugins {
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
     id("io.gitlab.arturbosch.detekt")
+    id("jacoco")
+}
+
+task("jacocoUnitTestReport", JacocoReport::class) {
+    setDependsOn(listOf("testDebugUnitTest"))
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*",
+        "**/compose/**/*.*",
+        "**/*HiltModules*.*"
+    )
+    val debugTree = fileTree("${buildDir}/intermediates/classes/debug") {
+        exclude(fileFilter)
+    }
+    val mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories.setFrom(files(mainSrc))
+    classDirectories.setFrom(files(debugTree))
+    executionData.setFrom(fileTree("$buildDir") {
+        include("jacoco/testDebugUnitTest.exec")
+        include("outputs/code-coverage/connected/*coverage.ec")
+    })
 }
 
 android {
@@ -26,8 +52,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
     buildFeatures {
         compose = true
@@ -37,7 +63,7 @@ android {
         kotlinCompilerExtensionVersion = "1.4.3"
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "18"
     }
 }
 
@@ -46,7 +72,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")
-    implementation("com.google.dagger:hilt-android:2.44")
+    implementation("com.google.dagger:hilt-android:2.48")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:3.8.0")
@@ -67,3 +93,8 @@ dependencies {
 kapt {
     correctErrorTypes = true
 }
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+

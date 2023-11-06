@@ -1,4 +1,4 @@
-package com.cale.mccammon.jeopardy.feature.presentation.stats
+package com.cale.mccammon.jeopardy.feature.presentation.stats.compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +28,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.cale.mccammon.jeopardy.feature.R
+import com.cale.mccammon.jeopardy.feature.presentation.stats.JeopardyStatsViewModel
 import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyHistoryItem
 import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyStatsEvent
 import com.cale.mccammon.jeopardy.feature.presentation.stats.model.JeopardyStatsState
