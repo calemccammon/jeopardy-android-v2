@@ -1,4 +1,4 @@
-package com.cale.mccammon.jeopardy.feature.presentation
+package com.cale.mccammon.jeopardy.feature.presentation.play.compose
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text

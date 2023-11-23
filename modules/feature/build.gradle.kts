@@ -19,8 +19,10 @@ task("jacocoUnitTestReport", JacocoReport::class) {
         "**/compose/**/*.*",
         "**/*HiltModules*.*",
         "**/data/**/*.*",
-        "**/presentation/play/model/**/*.*",
-        "**/presentation/stats/model/**/*.*"
+        "**/model/**/*.*",
+        "**/domain/JeopardyPreferencesImpl.class",
+        "**/domain/JeopardyHtmlParserImpl.class",
+        "**/*_Factory*.*"
     )
     val debugTree = fileTree("${buildDir}/intermediates/classes/debug") {
         exclude(fileFilter)
