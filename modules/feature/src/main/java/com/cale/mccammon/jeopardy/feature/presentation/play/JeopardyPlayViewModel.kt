@@ -165,7 +165,7 @@ class JeopardyPlayViewModel @Inject constructor(
      * We also want to get rid of leading articles.
      */
     private fun String.sanitize(): String {
-        return component.modelMapper.fromHtml(this).replace(
+        return component.htmlParser.fromHtml(this).replace(
             "the ",
             "",
             true

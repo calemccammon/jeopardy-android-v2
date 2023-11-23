@@ -10,6 +10,8 @@ import com.cale.mccammon.jeopardy.feature.data.JeopardyNetworkConfig
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyComponent
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyHistory
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyHistoryImpl
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyHtmlParser
+import com.cale.mccammon.jeopardy.feature.domain.JeopardyHtmlParserImpl
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyLogger
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapper
 import com.cale.mccammon.jeopardy.feature.domain.JeopardyModelMapperImpl
@@ -59,11 +61,16 @@ class ProvidesJeopardyModule {
     @Provides
     fun provideModelMapper(
         application: Application,
-        score: JeopardyScore
+        score: JeopardyScore,
+        htmlParser: JeopardyHtmlParser
     ): JeopardyModelMapper = JeopardyModelMapperImpl(
         application.resources,
-        score
+        score,
+        htmlParser
     )
+
+    @Provides
+    fun provideHtmlParser(): JeopardyHtmlParser = JeopardyHtmlParserImpl()
 
     @Provides
     fun providePreferences(

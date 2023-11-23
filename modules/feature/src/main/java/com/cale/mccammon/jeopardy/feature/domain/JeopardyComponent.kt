@@ -11,4 +11,5 @@ interface JeopardyComponent {
     val preferences: JeopardyPreferences
     val score: JeopardyScore
     val history: JeopardyHistory
+    val htmlParser: JeopardyHtmlParser
 }

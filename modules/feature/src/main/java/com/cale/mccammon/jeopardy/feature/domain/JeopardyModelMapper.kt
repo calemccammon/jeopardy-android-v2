@@ -11,7 +11,6 @@ import javax.inject.Inject
 
 interface JeopardyModelMapper {
     fun mapQuestion(questions: List<Question>): JeopardyQuestion
-    fun fromHtml(text: String): String
     fun buildSubmissionAcknowledgment(
         isCorrect: Boolean,
         value: Int,
@@ -21,7 +20,8 @@ interface JeopardyModelMapper {
 
 class JeopardyModelMapperImpl @Inject constructor(
     private val resources: Resources,
-    private val score: JeopardyScore
+    private val score: JeopardyScore,
+    private val htmlParser: JeopardyHtmlParser
 ): JeopardyModelMapper {
 
     @Throws(JeopardyInvalidQuestionException::class)
@@ -41,19 +41,12 @@ class JeopardyModelMapperImpl @Inject constructor(
         }.let {
             JeopardyQuestion(
                 it.id!!,
-                fromHtml(it.category!!.title!!),
-                fromHtml(it.question!!),
+                htmlParser.fromHtml(it.category!!.title!!),
+                htmlParser.fromHtml(it.question!!),
                 it.answer!!,
                 it.value!!
             )
         }
-    }
-
-    override fun fromHtml(text: String): String {
-        return Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY)
-            .toString()
-            .replace("\n", "")
-            .trim()
     }
 
     override fun buildSubmissionAcknowledgment(
