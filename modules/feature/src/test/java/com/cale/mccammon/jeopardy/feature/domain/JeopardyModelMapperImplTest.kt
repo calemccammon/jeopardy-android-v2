@@ -1,9 +1,11 @@
 package com.cale.mccammon.jeopardy.feature.domain
 
 import android.content.res.Resources
+import com.cale.mccammon.jeopardy.feature.R
 import com.cale.mccammon.jeopardy.feature.data.JeopardyInvalidQuestionException
 import com.cale.mccammon.jeopardy.feature.data.model.Category
 import com.cale.mccammon.jeopardy.feature.data.model.Question
+import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyAcknowledgment
 import com.cale.mccammon.jeopardy.feature.presentation.play.model.JeopardyQuestion
 import com.google.common.truth.Truth
 import org.junit.Assert
@@ -242,6 +244,70 @@ class JeopardyModelMapperImplTest {
 
     @Test
     fun buildSubmissionAcknowledgment() {
+        whenever(resources.getString(R.string.jeopardy_correct))
+            .thenReturn("correct")
+        whenever(resources.getString(R.string.jeopardy_try_again))
+            .thenReturn("try again")
+        whenever(resources.getString(R.string.jeopardy_score_remains_correct, "200"))
+            .thenReturn("remains correct")
+        whenever(resources.getString(R.string.jeopardy_score_remains_incorrect, "200"))
+            .thenReturn("remains incorrect")
+        whenever(resources.getString(R.string.jeopardy_increase, "100", "200"))
+            .thenReturn("increase")
+        whenever(resources.getString(R.string.jeopardy_decrease, "100", "200"))
+            .thenReturn("decrease")
+        whenever(score.get()).thenReturn(200)
 
+        Truth.assertThat(
+            mapper.buildSubmissionAcknowledgment(
+                true,
+                100,
+                false
+            )
+        ).isEqualTo(
+            JeopardyAcknowledgment(
+                "correct",
+                "increase"
+            )
+        )
+
+        Truth.assertThat(
+            mapper.buildSubmissionAcknowledgment(
+                false,
+                100,
+                false
+            )
+        ).isEqualTo(
+            JeopardyAcknowledgment(
+                "try again",
+                "decrease"
+            )
+        )
+
+        Truth.assertThat(
+            mapper.buildSubmissionAcknowledgment(
+                true,
+                100,
+                true
+            )
+        ).isEqualTo(
+            JeopardyAcknowledgment(
+                "try again",
+                "remains correct"
+            )
+        )
+
+        Truth.assertThat(
+            mapper.buildSubmissionAcknowledgment(
+                false,
+                100,
+                true
+            )
+        ).isEqualTo(
+            JeopardyAcknowledgment(
+                "try again",
+                "remains incorrect"
+            )
+        )
     }
 }

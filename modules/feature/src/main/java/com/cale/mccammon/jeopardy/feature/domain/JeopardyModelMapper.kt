@@ -56,18 +56,32 @@ class JeopardyModelMapperImpl @Inject constructor(
     ): JeopardyAcknowledgment {
         return JeopardyAcknowledgment(
             resources.getString(
-                if (isCorrect && !isInHistory) R.string.jeopardy_correct else R.string.jeopardy_try_again
+                if (isCorrect && !isInHistory) {
+                    R.string.jeopardy_correct
+                } else {
+                    R.string.jeopardy_try_again
+                }
             ),
             when {
                 isCorrect && isInHistory -> {
-                    resources.getString(R.string.jeopardy_score_remains_correct, score.get().toString())
+                    resources.getString(
+                        R.string.jeopardy_score_remains_correct,
+                        score.get().toString()
+                    )
                 }
                 !isCorrect && isInHistory -> {
-                    resources.getString(R.string.jeopardy_score_remains_incorrect, score.get().toString())
+                    resources.getString(
+                        R.string.jeopardy_score_remains_incorrect,
+                        score.get().toString()
+                    )
                 }
                 else -> {
                     resources.getString(
-                        if (isCorrect) R.string.jeopardy_increase else R.string.jeopardy_decrease,
+                        if (isCorrect) {
+                            R.string.jeopardy_increase
+                        } else {
+                            R.string.jeopardy_decrease
+                        },
                         value.toString(),
                         score.get().toString()
                     )
