@@ -39,6 +39,7 @@ class JeopardyModelMapperImplTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun mapQuestion() {
         Assert.assertThrows(
             JeopardyInvalidQuestionException::class.java,
@@ -243,6 +244,7 @@ class JeopardyModelMapperImplTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun buildSubmissionAcknowledgment() {
         whenever(resources.getString(R.string.jeopardy_correct))
             .thenReturn("correct")
