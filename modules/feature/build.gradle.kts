@@ -39,7 +39,7 @@ task("jacocoUnitTestReport", JacocoReport::class) {
 
 android {
     namespace = "com.cale.mccammon.jeopardy.feature"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24
@@ -69,6 +69,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = "18"
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 }
 
