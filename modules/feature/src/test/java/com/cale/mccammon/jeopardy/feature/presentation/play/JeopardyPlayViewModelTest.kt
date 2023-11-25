@@ -23,6 +23,7 @@ import com.google.common.truth.Truth
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -156,14 +157,8 @@ class JeopardyPlayViewModelTest {
 
     @Test
     fun testSkipQuestion() = runTest {
-        every { history.get() }.returns(
-            listOf(
-                JeopardyHistoryItem(
-                    question,
-                    ""
-                )
-            )
-        )
+        every { history.get() }.returns(emptyList())
+        every { history.add(any()) }.answers {  }
 
         viewModel.viewModelScope.launch {
             viewModel.handleEvent(
@@ -184,7 +179,7 @@ class JeopardyPlayViewModelTest {
     }
 
     @Test
-    fun testSendAnswer() {
+    fun testSendAnswer() = runTest {
         val acknowledgment = JeopardyAcknowledgment(
             "title",
             "body"
@@ -232,5 +227,195 @@ class JeopardyPlayViewModelTest {
                 submission
             )
         )
+    }
+
+    @Test
+    fun testSendBlankAnswer() = runTest {
+        val acknowledgment = JeopardyAcknowledgment(
+            "title",
+            "body"
+        )
+
+        val answer = ""
+
+        every {
+            modelMapper.buildSubmissionAcknowledgment(
+                any(),
+                any(),
+                any()
+            )
+        }.returns(acknowledgment)
+
+        every {
+            htmlParser.fromHtml(any())
+        }.returns(answer)
+
+        viewModel.viewModelScope.launch {
+            viewModel.handleEvent(
+                JeopardyPlayEvent.SendAnswer(
+                    answer
+                )
+            )
+        }
+
+        Truth.assertThat(
+            viewModel.state.value
+        ).isEqualTo(
+            JeopardyPlayState(
+                false,
+                question,
+                false,
+                null
+            )
+        )
+    }
+
+    @Test
+    fun testSendIncorrectAnswer() = runTest {
+        val acknowledgment = JeopardyAcknowledgment(
+            "title",
+            "body"
+        )
+
+        val answer = "test"
+
+        val submission = JeopardySubmission(
+            answer,
+            false,
+            acknowledgment
+        )
+
+        every { history.get() }.returns(listOf())
+
+        every { history.add(any()) }.answers {  }
+
+        every {
+            modelMapper.buildSubmissionAcknowledgment(
+                any(),
+                any(),
+                any()
+            )
+        }.returns(acknowledgment)
+
+        every {
+            htmlParser.fromHtml("test")
+        }.returns(answer)
+
+        every {
+            htmlParser.fromHtml(question.answer)
+        }.returns(question.answer)
+
+        viewModel.viewModelScope.launch {
+            viewModel.handleEvent(
+                JeopardyPlayEvent.SendAnswer(
+                    answer
+                )
+            )
+        }
+
+        Truth.assertThat(
+            viewModel.state.value
+        ).isEqualTo(
+            JeopardyPlayState(
+                false,
+                question,
+                false,
+                submission
+            )
+        )
+    }
+
+    @Test
+    fun testSendAnswerInHistory() = runTest {
+        val acknowledgment = JeopardyAcknowledgment(
+            "title",
+            "body"
+        )
+
+        val answer = "test"
+
+        val submission = JeopardySubmission(
+            answer,
+            false,
+            acknowledgment
+        )
+
+        every { history.get() }.returns(
+            listOf(
+                JeopardyHistoryItem(
+                    question,
+                    ""
+                )
+            )
+        )
+
+        every { history.add(any()) }.answers {  }
+
+        every {
+            modelMapper.buildSubmissionAcknowledgment(
+                any(),
+                any(),
+                any()
+            )
+        }.returns(acknowledgment)
+
+        every {
+            htmlParser.fromHtml("test")
+        }.returns(answer)
+
+        every {
+            htmlParser.fromHtml(question.answer)
+        }.returns(question.answer)
+
+        viewModel.viewModelScope.launch {
+            viewModel.handleEvent(
+                JeopardyPlayEvent.SendAnswer(
+                    answer
+                )
+            )
+        }
+
+        Truth.assertThat(
+            viewModel.state.value
+        ).isEqualTo(
+            JeopardyPlayState(
+                false,
+                question,
+                false,
+                submission
+            )
+        )
+    }
+
+    @Test
+    fun testException() = runTest {
+        every { logger.e(any()) }.answers {  }
+        viewModel.viewModelScope.launch {
+            viewModel.handleEvent(
+                JeopardyPlayEvent.SendAnswer("test")
+            )
+        }
+        verify { logger.e(any()) }
+    }
+
+    @Test
+    fun testRevealAnswer() = runTest {
+        every { history.get() }.returns(emptyList())
+        every { history.add(any()) }.answers {  }
+
+        viewModel.viewModelScope.launch {
+            viewModel.handleEvent(
+                JeopardyPlayEvent.RevealAnswer
+            )
+        }
+
+        verify {
+            history.add(
+                JeopardyHistoryItem(
+                    question,
+                    "skipped"
+                )
+            )
+        }
     }
 }
