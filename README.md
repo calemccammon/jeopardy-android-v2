@@ -16,5 +16,5 @@ The purposes of this application is to demonstrate core Android competencies usi
 
 This application is made possible by the freely available Jeopardy API jService: http://jservice.io/.
 
-(https://github.com/calemccammon/jeopardy-android-v2/capture1.png)
-(https://github.com/calemccammon/jeopardy-android-v2/capture2.png)
+![Play Screen](https://github.com/calemccammon/jeopardy-android-v2/capture1.png)
+![Stats Screen](https://github.com/calemccammon/jeopardy-android-v2/capture2.png)
