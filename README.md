@@ -3,7 +3,7 @@
 The purposes of this application is to demonstrate core Android competencies using the game of Jeopardy. These competencies include:
 
  - MVI pattern with Android View Models
- - Networking with Okhttp and Retrofit
+ - Networking with OkHttp and Retrofit
  - Kotlin coroutines and flows
  - JSON parsing with Gson
  - Jetpack Compose UI
