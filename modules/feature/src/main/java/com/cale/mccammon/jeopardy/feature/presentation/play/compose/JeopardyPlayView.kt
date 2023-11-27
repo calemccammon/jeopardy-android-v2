@@ -56,7 +56,7 @@ fun JeopardyPlayView(
 
 @Preview(showBackground = true)
 @Composable
-private fun JeopardyStateView(
+internal fun JeopardyStateView(
     @PreviewParameter(JeopardyStateViewPreviewParameter::class)
     state: JeopardyPlayState,
     handleEvent: (JeopardyPlayEvent) -> Unit = { }
